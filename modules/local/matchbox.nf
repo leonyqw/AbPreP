@@ -47,7 +47,7 @@ process RUN_MATCHBOX {
     output:
     record(
         barcode: barcode, 
-        matchbox_stats: file("${barcode}_count.csv"), 
+        matchbox_stats: file("${barcode}_matchbox_counts.csv"), 
         heavy_chain: file("${barcode}_heavy.fasta"), 
         light_chain: file("${barcode}_light.fasta", optional: true)
     )
@@ -76,7 +76,7 @@ process RUN_MATCHBOX {
 
     stub:
     """
-    touch ${barcode}_count.csv
+    touch ${barcode}_matchbox_counts.csv
     touch ${barcode}_heavy.fasta
     touch ${barcode}_light.fasta
     """

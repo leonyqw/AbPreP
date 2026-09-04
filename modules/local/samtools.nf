@@ -36,7 +36,7 @@ process SAMTOOLS {
 	// )
 	aligned_sorted_read: Path = file("${barcode}_aligned_sorted.bam")
 	index: Path = file("${barcode}_aligned_sorted.bam.bai")
-	aligned_stats: Path = file("${barcode}_alignment_stats.tsv")
+	aligned_stats: Path = file("${barcode}_alignment_stats.txt")
 	read_lengths: Path = file("${barcode}_read_lengths.tsv")
 
     script:
@@ -48,7 +48,7 @@ process SAMTOOLS {
 	samtools index "${barcode}_aligned_sorted.bam"
 	
 	# Counts the number of alignments for each FLAG type
-	samtools flagstat -O tsv "${barcode}_aligned_sorted.bam" > "${barcode}_alignment_stats.tsv"
+	samtools flagstat -O txt "${barcode}_aligned_sorted.bam" > "${barcode}_alignment_stats.txt"
 
 	# Output read lengths as a text file
 	samtools view "${barcode}_aligned_sorted.bam" | awk '{print length(\$10)}' > ${barcode}_read_lengths.tsv
@@ -58,7 +58,7 @@ process SAMTOOLS {
 	"""
 	touch ${barcode}_aligned_sorted.bam
 	touch ${barcode}_aligned_sorted.bam.bai
-	touch ${barcode}_alignment_stats.tsv
+	touch ${barcode}_alignment_stats.txt
 	touch ${barcode}_read_lengths.tsv
 	"""
 }

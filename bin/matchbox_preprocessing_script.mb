@@ -24,7 +24,7 @@ seqid = args.seqid
 nanobody = args.nanobody
 
 # Assign count csv name
-count_name = '{seqid}_count'
+count_name = '{seqid}_matchbox_counts'
 
 # Filter for only reads less than 15000bp long to minimize memory error
 if len(read.seq) < 15000 {
