@@ -79,7 +79,8 @@ workflow {
     barcode_file        = abprep.barcode_file
     bam_file            = abprep.bam_file
     bam_index           = abprep.bam_index
-    aligned_stats       = abprep.aligned_stats
+    flagstat            = abprep.flagstat
+    stats               = abprep.stats
     read_lengths        = abprep.read_lengths
     matchbox_stats_best = abprep.matchbox_stats_best
     matchbox_files_best = abprep.matchbox_files_best
@@ -116,7 +117,10 @@ output {
     bam_index {
         path "samtools/bam_files"
     }
-    aligned_stats {
+    flagstat {
+        path "samtools/stats"
+    }
+    stats {
         path "samtools/stats"
     }
     read_lengths {
