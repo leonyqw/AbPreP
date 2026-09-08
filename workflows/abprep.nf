@@ -15,7 +15,7 @@ include { MATCHBOX as MATCHBOX_ALL  } from '../modules/local/matchbox'
 include { RIOT as RIOT_ALL          } from '../modules/local/riot'
 include { MATCHBOX as MATCHBOX_BEST } from '../modules/local/matchbox'
 include { RIOT as RIOT_BEST         } from '../modules/local/riot'
-
+include { MULTIQC } from 'nf-core/multiqc'
 
 workflow ABPREP {
 
@@ -60,11 +60,14 @@ workflow ABPREP {
     riot_out_best = RIOT_BEST(matchbox_out_best)
     riot_out_all = RIOT_ALL(matchbox_out_all)
 
+    // MULTIQC("/results")
+
     emit:
     barcode_file         = ch_sample
     bam_file             = sam_out.aligned_sorted_read
     bam_index            = sam_out.index
-    aligned_stats        = sam_out.aligned_stats
+    flagstat             = sam_out.flagstat
+    stats                = sam_out.stats
     read_lengths         = sam_out.read_lengths
     matchbox_stats_best  = matchbox_out_best.map { output ->
         output.matchbox_stats
