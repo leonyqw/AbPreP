@@ -31,12 +31,13 @@ process SAMTOOLS {
 	// 	barcode: barcode, 
 	// 	aligned_sorted_read: file("${barcode}_aligned_sorted.bam"), 
 	// 	index: file("${barcode}_aligned_sorted.bam.bai"), 
-	// 	aligned_stats: file("${barcode}_alignment_stats.tsv"), 
+	// 	aligned_stats: file("${barcode}_flagstat.txt"), 
 	// 	read_lengths: file("${barcode}_read_lengths.tsv")
 	// )
 	aligned_sorted_read: Path = file("${barcode}_aligned_sorted.bam")
 	index: Path = file("${barcode}_aligned_sorted.bam.bai")
-	aligned_stats: Path = file("${barcode}_alignment_stats.txt")
+	flagstat: Path = file("${barcode}_flagstat.txt")
+	stats: Path = file("${barcode}_stats.txt")
 	read_lengths: Path = file("${barcode}_read_lengths.tsv")
 
     script:
@@ -48,17 +49,23 @@ process SAMTOOLS {
 	samtools index "${barcode}_aligned_sorted.bam"
 	
 	# Counts the number of alignments for each FLAG type
-	samtools flagstat -O txt "${barcode}_aligned_sorted.bam" > "${barcode}_alignment_stats.txt"
+	samtools flagstat -O txt "${barcode}_aligned_sorted.bam" > "${barcode}_flagstat.txt"
 
-	# Output read lengths as a text file
-	samtools view "${barcode}_aligned_sorted.bam" | awk '{print length(\$10)}' > ${barcode}_read_lengths.tsv
-    """
+	# Counts the number of alignments for each FLAG type
+	samtools stats "${barcode}_aligned_sorted.bam" > "${barcode}_stats.txt"
+
+	# Output read lengths for primary alignments as a text file
+	# samtools view "${barcode}_aligned_sorted.bam" -F 256 -F 2048 | awk -v bc="${barcode}" 'BEGIN{OFS="\t"; print "barcode","read_length"} {print bc, length(\$10)}' > ${barcode}_read_lengths.tsv
+
+	samtools view "${barcode}_aligned_sorted.bam" -F 256 -F 2048 | awk '{print length(\$10)}' > ${barcode}_read_lengths.tsv
+	"""
 
 	stub:
 	"""
 	touch ${barcode}_aligned_sorted.bam
 	touch ${barcode}_aligned_sorted.bam.bai
-	touch ${barcode}_alignment_stats.txt
+	touch ${barcode}_flagstat.txt
+	touch ${barcode}_stats.txt
 	touch ${barcode}_read_lengths.tsv
 	"""
 }
