@@ -66,12 +66,16 @@ process RUN_MATCHBOX {
     */
     script:
     """
-	matchbox \\
+	# Run matchbox script to extract heavy and light chain reads
+    matchbox \\
     -s ${matchbox_script} -e 0.3 \\
     -a "seqid='${barcode}', LCss = ${matchbox_parameters.LCss}, LC_after_lambda = ${matchbox_parameters.LC_after_lambda}, LC_after_kappa = ${matchbox_parameters.LC_after_kappa}, HCss = ${matchbox_parameters.HCss}, HC_after = ${matchbox_parameters.HC_after}, nanobody_ss = ${matchbox_parameters.nanobody_ss}, nanobody_after = ${matchbox_parameters.nanobody_after}, nanobody = ${nanobody}" \\
     --with-reverse-complement \\
     -m ${match_param} \\
     ${file}
+
+    # Divide the total number of reads by 2 (currently matchbox totals include both forward and reverse reads)
+    awk -F',' 'BEGIN{OFS=","} \$1=="total reads"{\$2=\$2/2} {print}' ${barcode}_matchbox_counts.csv > tmp.csv && mv tmp.csv ${barcode}_matchbox_counts.csv
     """
 
     stub:
