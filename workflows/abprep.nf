@@ -60,6 +60,7 @@ workflow ABPREP {
     riot_out_best = RIOT_BEST(matchbox_out_best)
     riot_out_all = RIOT_ALL(matchbox_out_all)
 
+    // Run multiqc to generate summary qc report
     // MULTIQC("/results")
 
     emit:

@@ -57,6 +57,7 @@ process SAMTOOLS {
 	# Output read lengths for primary alignments as a text file
 	# samtools view "${barcode}_aligned_sorted.bam" -F 256 -F 2048 | awk -v bc="${barcode}" 'BEGIN{OFS="\t"; print "barcode","read_length"} {print bc, length(\$10)}' > ${barcode}_read_lengths.tsv
 
+	# Extract read lengths
 	samtools view "${barcode}_aligned_sorted.bam" -F 256 -F 2048 | awk '{print length(\$10)}' > ${barcode}_read_lengths.tsv
 	"""
 

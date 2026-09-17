@@ -1,7 +1,7 @@
 read_dir: "${projectDir}/data/test_data/"
 sample_sheet: "${projectDir}/data/test_data/sample_sheet.csv"
 phagemid_ref: "/vast/projects/antibody_sequencing/abprep/data/reference_files/fab_phagemid.fa"
-matchbox_script: "/vast/projects/antibody_sequencing/abprep/bin/matchbox_preprocessing_script.mb"
+matchbox_script: "/home/users/allstaff/wang.leo/antibody_projects/leon_phd/preprocessing/bin/matchbox_preprocessing_script.mb"
 matchbox_parameters: "/vast/projects/antibody_sequencing/abprep/data/reference_files/matchbox_parameters.csv"
 output_dir: "results"
 enable_conda: false
