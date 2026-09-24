@@ -15,8 +15,9 @@ include { MATCHBOX as MATCHBOX_ALL  } from '../modules/local/matchbox'
 include { RIOT as RIOT_ALL          } from '../modules/local/riot'
 include { MATCHBOX as MATCHBOX_BEST } from '../modules/local/matchbox'
 include { RIOT as RIOT_BEST         } from '../modules/local/riot'
+include { NANOCOMP } from '../modules/local/nanocomp'
 include { MULTIQC } from 'nf-core/multiqc'
-
+// include { NANOCOMP } from 'nf-core/nanocomp'
 workflow ABPREP {
 
     take:
@@ -30,6 +31,22 @@ workflow ABPREP {
     main:
 
     ch_sample = PARSE_SAMPLE_SHEET(read_dir, sample_sheet)
+    
+    // Gather all files into one [ meta, [ files ] ] tuple
+    ch_nanocomp = ch_sample
+        .collect()
+        .map { sample -> sample.file }
+    //     .view()
+    //     // .map { files ->  files  }
+
+    // ch_nanocomp = ch_sample
+    //     .map { sample -> sample.file }
+    //     .collect()
+    //     .map { files -> [[id: 'nanocomp'], files] }
+
+    nanocomp_out = NANOCOMP(ch_nanocomp)
+
+    // nanocomp_out.view { v -> "stats_txt: ${v} \n" }
 
     // QC: Identify % aligning to the reference (gDNA/helper phage contamination)
     minimap_out = MINIMAP2(ch_sample, phagemid_ref)
@@ -70,6 +87,7 @@ workflow ABPREP {
     flagstat             = sam_out.flagstat
     stats                = sam_out.stats
     read_lengths         = sam_out.read_lengths
+    nanocomp_stats       = nanocomp_out
     matchbox_stats_best  = matchbox_out_best.map { output ->
         output.matchbox_stats
     }

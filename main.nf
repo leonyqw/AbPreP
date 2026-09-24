@@ -82,6 +82,7 @@ workflow {
     flagstat            = abprep.flagstat
     stats               = abprep.stats
     read_lengths        = abprep.read_lengths
+    nanocomp_stats      = abprep.nanocomp_stats
     matchbox_stats_best = abprep.matchbox_stats_best
     matchbox_files_best = abprep.matchbox_files_best
     matchbox_stats_all  = abprep.matchbox_stats_all
@@ -125,6 +126,9 @@ output {
     }
     read_lengths {
         path "samtools/read_lengths"
+    }
+    nanocomp_stats {
+        path "nanocomp"
     }
     matchbox_stats_best {
         path "matchbox/best/counts"
