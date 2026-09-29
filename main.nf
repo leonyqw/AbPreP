@@ -79,10 +79,8 @@ workflow {
     barcode_file        = abprep.barcode_file
     bam_file            = abprep.bam_file
     bam_index           = abprep.bam_index
-    flagstat            = abprep.flagstat
     stats               = abprep.stats
     read_lengths        = abprep.read_lengths
-    // nanocomp_stats      = abprep.nanocomp_stats
     matchbox_stats_best = abprep.matchbox_stats_best
     matchbox_files_best = abprep.matchbox_files_best
     matchbox_stats_all  = abprep.matchbox_stats_all
@@ -118,18 +116,12 @@ output {
     bam_index {
         path "samtools/bam_files"
     }
-    flagstat {
-        path "samtools/stats"
-    }
     stats {
         path "samtools/stats"
     }
     read_lengths {
         path "samtools/read_lengths"
     }
-    // nanocomp_stats {
-    //     path "nanocomp"
-    // }
     matchbox_stats_best {
         path "matchbox/best/counts"
     }

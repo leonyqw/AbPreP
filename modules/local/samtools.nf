@@ -47,15 +47,9 @@ process SAMTOOLS {
 	
 	# Index BAM file for fast random access
 	samtools index "${barcode}_aligned_sorted.bam"
-	
-	# Counts the number of alignments for each FLAG type
-	samtools flagstat -O txt "${barcode}_aligned_sorted.bam" > "${barcode}_flagstat.txt"
 
 	# Counts the number of alignments for each FLAG type
 	samtools stats "${barcode}_aligned_sorted.bam" > "${barcode}_stats.txt"
-
-	# Output read lengths for primary alignments as a text file
-	# samtools view "${barcode}_aligned_sorted.bam" -F 256 -F 2048 | awk -v bc="${barcode}" 'BEGIN{OFS="\t"; print "barcode","read_length"} {print bc, length(\$10)}' > ${barcode}_read_lengths.tsv
 
 	# Extract read lengths
 	samtools view "${barcode}_aligned_sorted.bam" -F 256 -F 2048 | awk '{print length(\$10)}' > ${barcode}_read_lengths.tsv
@@ -65,7 +59,6 @@ process SAMTOOLS {
 	"""
 	touch ${barcode}_aligned_sorted.bam
 	touch ${barcode}_aligned_sorted.bam.bai
-	touch ${barcode}_flagstat.txt
 	touch ${barcode}_stats.txt
 	touch ${barcode}_read_lengths.tsv
 	"""

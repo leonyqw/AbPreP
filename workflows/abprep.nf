@@ -82,10 +82,8 @@ workflow ABPREP {
     barcode_file         = ch_sample
     bam_file             = sam_out.aligned_sorted_read
     bam_index            = sam_out.index
-    flagstat             = sam_out.flagstat
     stats                = sam_out.stats
     read_lengths         = sam_out.read_lengths
-    // nanocomp_stats       = nanocomp_out
     matchbox_stats_best  = matchbox_out_best.map { output ->
         output.matchbox_stats
     }
