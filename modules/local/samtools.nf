@@ -36,7 +36,6 @@ process SAMTOOLS {
 	// )
 	aligned_sorted_read: Path = file("${barcode}_aligned_sorted.bam")
 	index: Path = file("${barcode}_aligned_sorted.bam.bai")
-	flagstat: Path = file("${barcode}_flagstat.txt")
 	stats: Path = file("${barcode}_stats.txt")
 	read_lengths: Path = file("${barcode}_read_lengths.tsv")
 
