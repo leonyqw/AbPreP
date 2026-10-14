@@ -16,9 +16,7 @@ include { RIOT as RIOT_ALL          } from '../modules/local/riot'
 include { MATCHBOX as MATCHBOX_BEST } from '../modules/local/matchbox'
 include { RIOT as RIOT_BEST         } from '../modules/local/riot'
 include { ABPREP_MULTIQC                    } from '../modules/local/abprep_multiqc_plugin'
-// include { NANOCOMP } from '../modules/local/nanocomp'
 // include { MULTIQC } from 'nf-core/multiqc'
-// include { NANOCOMP } from 'nf-core/nanocomp'
 workflow ABPREP {
 
     take:
@@ -32,23 +30,8 @@ workflow ABPREP {
     logo: Path
 
     main:
-
+    // Parse samplesheet and get samples
     ch_sample = PARSE_SAMPLE_SHEET(read_dir, sample_sheet)
-    ch_multiqc_files = channel.empty()
-    
-    // // Gather all files into one [ meta, [ files ] ] tuple
-    // ch_nanocomp = ch_sample
-    //     .collect()
-    //     .map { sample -> sample.file }
-    //     .view()
-    //     // .map { files ->  files  }
-
-    // ch_nanocomp = ch_sample
-    //     .map { sample -> sample.file }
-    //     .collect()
-    //     .map { files -> [[id: 'nanocomp'], files] }
-
-    // nanocomp_out = NANOCOMP(ch_nanocomp)
 
     // QC: Identify % aligning to the reference (gDNA/helper phage contamination)
     minimap_out = MINIMAP2(ch_sample, phagemid_ref)
@@ -79,7 +62,8 @@ workflow ABPREP {
     riot_out_best = RIOT_BEST(matchbox_out_best)
     riot_out_all = RIOT_ALL(matchbox_out_all)
 
-
+    // Collect all files for MultiQC report
+    ch_multiqc_files = channel.empty()
     ch_multiqc_files = ch_multiqc_files.mix(sam_out.stats)
         .mix(sam_out.read_lengths)
         .mix(matchbox_out_best.map { files -> files.matchbox_stats })
