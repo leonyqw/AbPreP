@@ -1,15 +1,24 @@
 # process the data and collapse by clones
 
-# setwd("/vast/projects/antibody_sequencing/PC008/use_pipeline")
 library(readr)
 library(tidyr)
 library(dplyr)
 library(stringr)
+library(optparse)
+
+option_list <- list(
+    make_option("--keep-cols",    type = "character", help = "Path to BAM file"),
+    make_option("--input",    type = "character", help = "Path to GTF file"),
+)
+
+opt <- parse_args(OptionParser(option_list = option_list))
+
+cols_keep_path  <- opt$keep_cols
+inputs  <- opt$input
 
 # Input and output file path locations
-cols_keep_path <- "/home/users/allstaff/wang.leo/antibody_projects/leon_phd/preprocessing/data/columns_to_keep.csv"
-sequences_path <- "/vast/projects/antibody_sequencing/leon_phd/preprocessing/results/riot/best/"
-output_path <- "/home/users/allstaff/wang.leo/antibody_projects/leon_phd/preprocessing/results/"
+# cols_keep_path <- "/home/users/allstaff/wang.leo/antibody_projects/leon_phd/preprocessing/data/columns_to_keep.csv"
+# sequences_path <- "/vast/projects/antibody_sequencing/leon_phd/preprocessing/results/riot/best/"
 
 # Get list of column names to keep
 columns_to_keep_df <- read_csv(cols_keep_path)
@@ -21,7 +30,7 @@ columns_to_keep <- columns_to_keep_df |>
 # Combine all heavy chain sequence files together, and keep only required variables
 H_chains <- read_csv(
   fs::dir_ls(
-    path = sequences_path,
+    path = inputs,
     glob = "*_heavy.csv"),
   col_select = any_of(columns_to_keep[[1]]), 
   id = "sample") |>
@@ -32,7 +41,7 @@ H_chains <- read_csv(
 # Combine all light chain sequences files together, and keep only required variables
 L_chains <- read_csv(
   fs::dir_ls(
-    path = sequences_path,
+    path = inputs,
     glob = "*_light.csv"),
   col_select = any_of(columns_to_keep[[1]]),
   id = "sample") |>
@@ -49,39 +58,6 @@ both_chains <- full_join(H_chains, L_chains, by = "sequence_header",
   filter(!is.na(sample)) |> 
   relocate(sample)
 
-## Move to QC report
-# # Extract productive H chains
-# prod_H <- both_chains |>
-#     pull(productive_H) |>
-#     table() |>
-#     prop.table() |>
-#     as_tibble() |>
-#     mutate(n = n * 100) |> # prop to percent
-#     rename(productivity = ".", percentage_H = "n")
-# 
-# prod_L <- both_chains |>
-#     pull(productive_L) |>
-#     table() |>
-#     prop.table() |>
-#     as_tibble() |>
-#     mutate(n = n * 100) |> # prop to percent
-#     rename(productivity = ".", percentage_L = "n")
-# 
-# prod_H |> left_join(prod_L) |> write_csv()
-
-## Move this to QC report
-# how many unique clones?
-# both_chains |>
-#   # collapse into clones
-#   filter(productive_H & productive_L) |>
-#   filter(cdr3_aa_H != cdr3_aa_L) |>
-#   group_by(cdr3_aa_H, cdr3_aa_L, sample) |>
-#   summarise(count = n()) |>
-#   ungroup() |>
-#   group_by(sample) |>
-#   summarise(n_clones = n()) |>
-#   write_csv()
-
 # create the per sequence clone table of only productive sequences
 both_chains |>
 # collapse into clones
@@ -94,7 +70,7 @@ both_chains |>
   group_by(sample) |>
   # mutate(cpm = (count / sum(count)) * 1000000) |>
   # arrange(desc(cpm)) |>
-  write_csv(paste0(output_path,"sequence_table.csv"))
+  write_csv("sequence_table.csv")
 
 ## Add to new analysis script for aim 2?
 # # table of most common amino acid sequence for each clone 

@@ -15,6 +15,7 @@ include { MATCHBOX as MATCHBOX_ALL  } from '../modules/local/matchbox'
 include { RIOT as RIOT_ALL          } from '../modules/local/riot'
 include { MATCHBOX as MATCHBOX_BEST } from '../modules/local/matchbox'
 include { RIOT as RIOT_BEST         } from '../modules/local/riot'
+include { COUNTS_MATRIX              } from '../modules/local/counts_matrix'
 
 
 workflow ABPREP {
@@ -60,6 +61,11 @@ workflow ABPREP {
     riot_out_best = RIOT_BEST(matchbox_out_best)
     riot_out_all = RIOT_ALL(matchbox_out_all)
 
+    r_files = riot_out_best.flatMap { files -> files }.toList()
+
+    // Create a counts matrix for downstream analysis
+    counts_matrix = COUNTS_MATRIX(r_files)
+
     emit:
     barcode_file         = ch_sample
     bam_file             = sam_out.aligned_sorted_read
@@ -80,4 +86,5 @@ workflow ABPREP {
     }
     riot_files_best = riot_out_best
     riot_files_all  = riot_out_all
+    counts_matrix = counts_matrix
 }
