@@ -15,8 +15,8 @@ include { MATCHBOX as MATCHBOX_ALL  } from '../modules/local/matchbox'
 include { RIOT as RIOT_ALL          } from '../modules/local/riot'
 include { MATCHBOX as MATCHBOX_BEST } from '../modules/local/matchbox'
 include { RIOT as RIOT_BEST         } from '../modules/local/riot'
-
-
+include { ABPREP_MULTIQC                    } from '../modules/local/abprep_multiqc_plugin'
+// include { MULTIQC } from 'nf-core/multiqc'
 workflow ABPREP {
 
     take:
@@ -26,9 +26,11 @@ workflow ABPREP {
     matchbox_script: Path
     matchbox_parameters: Path
     nanobody: Boolean
+    multiqc_config: Path
+    logo: Path
 
     main:
-
+    // Parse samplesheet and get samples
     ch_sample = PARSE_SAMPLE_SHEET(read_dir, sample_sheet)
 
     // QC: Identify % aligning to the reference (gDNA/helper phage contamination)
@@ -60,11 +62,26 @@ workflow ABPREP {
     riot_out_best = RIOT_BEST(matchbox_out_best)
     riot_out_all = RIOT_ALL(matchbox_out_all)
 
+    // Collect all files for MultiQC report
+    ch_multiqc_files = channel.empty()
+    ch_multiqc_files = ch_multiqc_files.mix(sam_out.stats)
+        .mix(sam_out.read_lengths)
+        .mix(matchbox_out_best.map { files -> files.matchbox_stats })
+        .mix(riot_out_best.flatMap { files -> files })
+        .toList()
+
+    // Run Multiqc and AbPreP plugin to generate qc report
+    multiqc_out = ABPREP_MULTIQC(
+        ch_multiqc_files,
+        multiqc_config,
+        logo
+    )
+
     emit:
     barcode_file         = ch_sample
     bam_file             = sam_out.aligned_sorted_read
     bam_index            = sam_out.index
-    aligned_stats        = sam_out.aligned_stats
+    stats                = sam_out.stats
     read_lengths         = sam_out.read_lengths
     matchbox_stats_best  = matchbox_out_best.map { output ->
         output.matchbox_stats
@@ -80,4 +97,5 @@ workflow ABPREP {
     }
     riot_files_best = riot_out_best
     riot_files_all  = riot_out_all
+    multiqc_report = multiqc_out
 }
