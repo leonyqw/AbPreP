@@ -30,6 +30,8 @@ params {
     help: Boolean
     enable_conda: Boolean
     nanobody: Boolean
+    multiqc_config: Path
+    logo: Path
 }
 
 workflow {
@@ -73,13 +75,15 @@ workflow {
         params.matchbox_script,
         params.matchbox_parameters,
         params.nanobody,
+        params.multiqc_config,
+        params.logo
     )
 
     publish:
     barcode_file        = abprep.barcode_file
     bam_file            = abprep.bam_file
     bam_index           = abprep.bam_index
-    aligned_stats       = abprep.aligned_stats
+    stats               = abprep.stats
     read_lengths        = abprep.read_lengths
     matchbox_stats_best = abprep.matchbox_stats_best
     matchbox_files_best = abprep.matchbox_files_best
@@ -87,6 +91,7 @@ workflow {
     matchbox_files_all  = abprep.matchbox_files_all
     riot_files_best     = abprep.riot_files_best
     riot_files_all      = abprep.riot_files_all
+    multiqc_report       = abprep.multiqc_report
     counts_matrix        = abprep.counts_matrix
 
     onComplete:
@@ -117,7 +122,7 @@ output {
     bam_index {
         path "samtools/bam_files"
     }
-    aligned_stats {
+    stats {
         path "samtools/stats"
     }
     read_lengths {
@@ -141,6 +146,8 @@ output {
     riot_files_all {
         path "riot/all"
     }
+    multiqc_report {
+        path ""
     counts_matrix {
         path ""
     }
