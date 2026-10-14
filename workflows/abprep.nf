@@ -15,8 +15,9 @@ include { MATCHBOX as MATCHBOX_ALL  } from '../modules/local/matchbox'
 include { RIOT as RIOT_ALL          } from '../modules/local/riot'
 include { MATCHBOX as MATCHBOX_BEST } from '../modules/local/matchbox'
 include { RIOT as RIOT_BEST         } from '../modules/local/riot'
+include { ABPREP_MULTIQC                    } from '../modules/local/abprep_multiqc_plugin'
 // include { NANOCOMP } from '../modules/local/nanocomp'
-include { MULTIQC } from 'nf-core/multiqc'
+// include { MULTIQC } from 'nf-core/multiqc'
 // include { NANOCOMP } from 'nf-core/nanocomp'
 workflow ABPREP {
 
@@ -27,15 +28,18 @@ workflow ABPREP {
     matchbox_script: Path
     matchbox_parameters: Path
     nanobody: Boolean
+    multiqc_config: Path
+    logo: Path
 
     main:
 
     ch_sample = PARSE_SAMPLE_SHEET(read_dir, sample_sheet)
+    ch_multiqc_files = channel.empty()
     
-    // Gather all files into one [ meta, [ files ] ] tuple
-    ch_nanocomp = ch_sample
-        .collect()
-        .map { sample -> sample.file }
+    // // Gather all files into one [ meta, [ files ] ] tuple
+    // ch_nanocomp = ch_sample
+    //     .collect()
+    //     .map { sample -> sample.file }
     //     .view()
     //     // .map { files ->  files  }
 
@@ -75,8 +79,19 @@ workflow ABPREP {
     riot_out_best = RIOT_BEST(matchbox_out_best)
     riot_out_all = RIOT_ALL(matchbox_out_all)
 
-    // Run multiqc to generate summary qc report
-    // MULTIQC("/results")
+
+    ch_multiqc_files = ch_multiqc_files.mix(sam_out.stats)
+        .mix(sam_out.read_lengths)
+        .mix(matchbox_out_best.map { files -> files.matchbox_stats })
+        .mix(riot_out_best.flatMap { files -> files })
+        .toList()
+
+    // Run Multiqc and AbPreP plugin to generate qc report
+    multiqc_out = ABPREP_MULTIQC(
+        ch_multiqc_files,
+        multiqc_config,
+        logo
+    )
 
     emit:
     barcode_file         = ch_sample
@@ -98,4 +113,5 @@ workflow ABPREP {
     }
     riot_files_best = riot_out_best
     riot_files_all  = riot_out_all
+    multiqc_report = multiqc_out
 }

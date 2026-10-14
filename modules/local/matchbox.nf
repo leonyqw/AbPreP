@@ -22,7 +22,7 @@ process RUN_MATCHBOX {
 	tag "${barcode}"
     label "process_high"
 
-    // Use Singularity container or pull from Docker container for samtools (linux/amd64) if singularity profile is enabled
+    // Use Singularity container or pull from Docker container if singularity profile is enabled
 	container 'ghcr.io/jakob-schuster/matchbox@sha256:774786ff07c5d9d16d1fb64d8329c9c2cf9fd0fe3d89856e2a2672133e0c3fae'
 
 	// Declare inputs required for the process

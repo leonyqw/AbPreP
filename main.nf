@@ -30,6 +30,8 @@ params {
     help: Boolean
     enable_conda: Boolean
     nanobody: Boolean
+    multiqc_config: Path
+    logo: Path
 }
 
 workflow {
@@ -73,6 +75,8 @@ workflow {
         params.matchbox_script,
         params.matchbox_parameters,
         params.nanobody,
+        params.multiqc_config,
+        params.logo
     )
 
     publish:
@@ -87,6 +91,7 @@ workflow {
     matchbox_files_all  = abprep.matchbox_files_all
     riot_files_best     = abprep.riot_files_best
     riot_files_all      = abprep.riot_files_all
+    multiqc_report       = abprep.multiqc_report
 
     onComplete:
     def status = workflow.success ? "SUCCESS ✅" : "FAILED ❌"
@@ -139,5 +144,8 @@ output {
     }
     riot_files_all {
         path "riot/all"
+    }
+    multiqc_report {
+        path "report"
     }
 }
