@@ -92,6 +92,7 @@ workflow {
     riot_files_best     = abprep.riot_files_best
     riot_files_all      = abprep.riot_files_all
     multiqc_report       = abprep.multiqc_report
+    counts_matrix        = abprep.counts_matrix
 
     onComplete:
     def status = workflow.success ? "SUCCESS ✅" : "FAILED ❌"
@@ -146,6 +147,8 @@ output {
         path "riot/all"
     }
     multiqc_report {
-        path "report"
+        path ""
+    counts_matrix {
+        path ""
     }
 }

@@ -17,6 +17,9 @@ include { MATCHBOX as MATCHBOX_BEST } from '../modules/local/matchbox'
 include { RIOT as RIOT_BEST         } from '../modules/local/riot'
 include { ABPREP_MULTIQC                    } from '../modules/local/abprep_multiqc_plugin'
 // include { MULTIQC } from 'nf-core/multiqc'
+include { COUNTS_MATRIX              } from '../modules/local/counts_matrix'
+
+
 workflow ABPREP {
 
     take:
@@ -76,6 +79,10 @@ workflow ABPREP {
         multiqc_config,
         logo
     )
+    r_files = riot_out_best.flatMap { files -> files }.toList()
+
+    // Create a counts matrix for downstream analysis
+    counts_matrix = COUNTS_MATRIX(r_files)
 
     emit:
     barcode_file         = ch_sample
@@ -98,4 +105,5 @@ workflow ABPREP {
     riot_files_best = riot_out_best
     riot_files_all  = riot_out_all
     multiqc_report = multiqc_out
+    counts_matrix = counts_matrix
 }
