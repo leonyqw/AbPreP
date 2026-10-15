@@ -32,6 +32,6 @@ process ABPREP_MULTIQC {
 
     stub:
     """
-    touch _multiqc_report.html
+    touch AbPreP_multiqc_report.html
     """
 }

@@ -1,35 +1,48 @@
-# process the data and collapse by clones
+#!/usr/bin/env Rscript
+
+# Process the heavy (and light chain) outputs from riot ,and summarises counts per VH-VL clone pair.
+
+################################################
+## LOAD LIBRARIES                             ##
+################################################
 
 library(readr)
 library(tidyr)
 library(dplyr)
 library(stringr)
 library(optparse)
+library(fs)
+
+################################################
+## PARSE COMMAND-LINE PARAMETERS              ##
+################################################
 
 option_list <- list(
-    make_option("--keep-cols",    type = "character", help = "Path to BAM file"),
-    make_option("--input",    type = "character", help = "Path to GTF file"),
+    make_option("--keep_cols", type = "character", metavar="path", help = "Path to files for columns to keep"),
+    make_option("--input", type = "character", metavar="path", help = "Path to heavy anbd light chain files")
 )
 
 opt <- parse_args(OptionParser(option_list = option_list))
-
 cols_keep_path  <- opt$keep_cols
 inputs  <- opt$input
 
-# Input and output file path locations
-# cols_keep_path <- "/home/users/allstaff/wang.leo/antibody_projects/leon_phd/preprocessing/data/columns_to_keep.csv"
-# sequences_path <- "/vast/projects/antibody_sequencing/leon_phd/preprocessing/results/riot/best/"
+################################################
+## READ IN FILES.                             ##
+################################################
 
 # Get list of column names to keep
 columns_to_keep_df <- read_csv(cols_keep_path)
-
 columns_to_keep <- columns_to_keep_df |>
   filter(flag_keep) |>
   select(variable)
 
+################################################
+## CREATE COUNTS MATRIX                       ##
+################################################
+
 # Combine all heavy chain sequence files together, and keep only required variables
 H_chains <- read_csv(
-  fs::dir_ls(
+  dir_ls(
     path = inputs,
     glob = "*_heavy.csv"),
   col_select = any_of(columns_to_keep[[1]]), 
@@ -40,7 +53,7 @@ H_chains <- read_csv(
 
 # Combine all light chain sequences files together, and keep only required variables
 L_chains <- read_csv(
-  fs::dir_ls(
+  dir_ls(
     path = inputs,
     glob = "*_light.csv"),
   col_select = any_of(columns_to_keep[[1]]),
@@ -70,8 +83,9 @@ both_chains |>
   group_by(sample) |>
   # mutate(cpm = (count / sum(count)) * 1000000) |>
   # arrange(desc(cpm)) |>
-  write_csv("sequence_table.csv")
+  write_csv("counts_matrix.csv")
 
+# TODO DELETE
 ## Add to new analysis script for aim 2?
 # # table of most common amino acid sequence for each clone 
 # both_chains |>
@@ -88,3 +102,17 @@ both_chains |>
 #     sequence_aa_H = sequence_aa_H[which.max(count)], 
 #     .by = c(cdr3_aa_H, cdr3_aa_L, v_call_H, v_call_L)) |>
 #   write_csv()
+
+################################################
+## R SESSION INFO                             ##
+################################################
+
+RLogFile <- "R_sessionInfo.log"
+
+sink(RLogFile)
+a <- sessionInfo()
+print(a)
+sink()
+
+################################################
+################################################

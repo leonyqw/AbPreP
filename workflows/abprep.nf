@@ -79,10 +79,11 @@ workflow ABPREP {
         multiqc_config,
         logo
     )
-    r_files = riot_out_best.flatMap { files -> files }.toList()
-
-    // Create a counts matrix for downstream analysis
-    counts_matrix = COUNTS_MATRIX(r_files)
+    
+    // Create counts matrix for downstream analysis
+    def ch_riot_cols_keep       = file("$projectDir/assets/columns_to_keep.csv", checkIfExists: true)
+    riot_files = riot_out_best.flatMap { files -> files }.toList()
+    counts_matrix = COUNTS_MATRIX(riot_files, ch_riot_cols_keep)
 
     emit:
     barcode_file         = ch_sample
