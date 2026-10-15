@@ -148,6 +148,7 @@ output {
     }
     multiqc_report {
         path ""
+    }
     counts_matrix {
         path ""
     }
