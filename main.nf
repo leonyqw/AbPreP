@@ -135,9 +135,9 @@ output {
         path "riot/all"
     }
     multiqc_report {
-        path ""
+        path "."
     }
     counts_matrix {
-        path ""
+        path "."
     }
 }
