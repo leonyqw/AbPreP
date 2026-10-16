@@ -1,8 +1,0 @@
-read_dir: "/vast/projects/antibody_sequencing/PC010/20251121_WEHI_CBT_PC010/Cowman_Lab/20251121_1015_P2S-01296-A_PBG90717_e96ccf45/demultiplex_sup"
-sample_sheet: "${projectDir}/data/reference_files/preprocessing_sample_sheet.csv"
-phagemid_ref: "${projectDir}/data/reference_files/PMES4_nanobody.fa"
-matchbox_script: "/vast/projects/antibody_sequencing/preprocessing_pipeline/bin/matchbox_preprocessing_script.mb"
-matchbox_parameters: "/vast/projects/antibody_sequencing/preprocessing_pipeline/data/reference_files/matchbox_parameters.csv"
-output_dir: "results"
-enable_conda: false
-nanobody: true
