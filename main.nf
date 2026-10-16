@@ -12,13 +12,6 @@ include { header             } from './subworkflows/header'
 include { helpMessage        } from './subworkflows/help'
 include { validateParameters ; paramsSummaryLog ; samplesheetToList } from 'plugin/nf-schema'
 include { ABPREP             } from './workflows/abprep'
-// include { PARSE_SAMPLE_SHEET        } from './modules/local/file_import'
-// include { MINIMAP2                  } from './modules/local/minimap2'
-// include { SAMTOOLS                  } from './modules/local/samtools'
-// include { MATCHBOX as MATCHBOX_ALL  } from './modules/local/matchbox'
-// include { RIOT as RIOT_ALL          } from './modules/local/riot'
-// include { MATCHBOX as MATCHBOX_BEST } from './modules/local/matchbox'
-// include { RIOT as RIOT_BEST         } from './modules/local/riot'
 
 // Pipeline parameters
 params {
@@ -54,10 +47,6 @@ workflow {
     // Print pipeline information
     header()
 
-    // Validate parameters
-    // paths_to_validate = [params.read_dir, params.phagemid_ref, params.matchbox_script, params.matchbox_parameters].join(",")
-    // VALIDATE_PARAMS(paths_to_validate)
-
     // Validate input parameters
     validateParameters()
 
@@ -72,7 +61,6 @@ workflow {
         params.read_dir,
         params.sample_sheet,
         params.phagemid_ref,
-        // params.matchbox_script,
         params.matchbox_parameters,
         params.nanobody,
         params.multiqc_config,
