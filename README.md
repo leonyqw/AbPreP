@@ -5,27 +5,49 @@ This nextflow pipeline is designed to assist in processing of antibody long-read
 * The [documentation website]()
 * The [data]()
 
-## Script compilation issues
-This pipeline requires strict syntax enabled (from nextflow version 26.04.0 onwards, this should be enabled by default). If this is not enabled, you may receive the following error: "ERROR ~ Script compilation error". If you receive this error, make sure you enable strict syntax in your terminal as follows:
-```
-export NXF_SYNTAX_PARSER=v2
-```
+
+## Introduction
+[Insert ]
+
 ## Usage
+First, prepare samplesheet with input data as follow:
+```
+sample,xx,xx
+sample1,xx,xx
+```
 
 ```
-Usage:  nextflow run main.nf --read_dir [path to fastq files] --sample_sheet [path to sample sheet] \\
-		--phagemid_ref [path to reference genome] --matchbox_script [path to matchbox script]
+nextflow run main.nf \
+	-profile <conda/singularity/.../institute>
+	-params-file <path to parameter file>
+	--read_dir <path to fastq files> \
+	--sample_sheet <path to sample sheet> \
+	--phagemid_ref <path to reference genome> \
+	--matchbox_script <path to matchbox script>
+```
 
+Parameters
+Input/output options
+```
+```
+
+Reference genome options
+```
+```
+
+Generic options
+```
 --help              	: prints this help message
-
-Required Arguments:
+```
+```
+Required parameters:
 --read_dir				: Specify full path to the read file(s) location
 --sample_sheet  		: Specify full path to the .csv sample sheet
 --phagemid_ref			: Specify full path to the reference genome
 --matchbox_script		: Specify full path to the matchbox script
 --matchbox_parameters	: Specify full path to the parameters file for the matchbox script
 
-Optional Arguments:
+Optional parameters:
 --nanobody              : Takes a true or false value. Specifies whether pipeline is for nanobody (true) or antibody (false) sequencing data (default: false)
 --output_dir        	: Specify the full path to where the output files will be written  (default: "$projectDir/results)
 -profile		    	: Specify the profile to run nextflow through

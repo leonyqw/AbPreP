@@ -4,9 +4,9 @@ E.g. provides information on sequence and germline alignment, V(D)J & C sequence
 */
 
 //Enable typed processes
-nextflow.preview.types = true
+nextflow.enable.types = true
 
-process riot {
+process RIOT {
 	tag "${barcode}"
     label "process_extreme"
 
@@ -20,15 +20,19 @@ process riot {
 
 	// Declare inputs required for the process
     input:
-    // Tuple for sample name, and paths for heavy chain and (if antibody) light chain files
-	(barcode, heavy_file, light_file): Tuple<String, Path, Path?>
-    nanobody: Boolean
+    // Record for sample name, and paths for heavy chain and (if antibody) light chain files
+    record (
+        barcode: String, 
+        heavy_chain: Path, 
+        light_chain: Path?
+    )
 	
 	// Declare outputs
 	output:
-    riot_files = tuple(
+    tuple(
         file("${barcode}_annot_heavy.csv"), 
-        file("${barcode}_annot_light.csv", optional: true))
+        file("${barcode}_annot_light.csv", optional: true)
+    )
 
     /*
     Run riot
@@ -39,16 +43,22 @@ process riot {
     */
     script:
     // If only nanobody, run riot on heavy chain
-    if (nanobody) {
+    if (params.nanobody) {
     """
-    riot_na -f ${heavy_file} --species VICUGNA_PACOS -p 16 -o "${barcode}_annot_heavy.csv"
+    riot_na -f ${heavy_chain} --species VICUGNA_PACOS -p 16 -o "${barcode}_annot_heavy.csv"
     """
     }
     // Otheriwse run riot on antibody sequences for heavy and light chain
     else {
     """
-    riot_na -f ${heavy_file} --species HOMO_SAPIENS -p 16 -o "${barcode}_annot_heavy.csv"
-    riot_na -f ${light_file} --species HOMO_SAPIENS -p 16 -o "${barcode}_annot_light.csv"
+    riot_na -f ${heavy_chain} --species HOMO_SAPIENS -p 16 -o "${barcode}_annot_heavy.csv"
+    riot_na -f ${light_chain} --species HOMO_SAPIENS -p 16 -o "${barcode}_annot_light.csv"
     """
     }
+
+    stub:
+    """
+    touch ${barcode}_annot_heavy.csv
+    touch ${barcode}_annot_light.csv
+    """
 }

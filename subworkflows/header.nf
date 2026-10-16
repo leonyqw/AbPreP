@@ -1,14 +1,14 @@
 #!/usr/bin/env nextflow
 
 //Enable typed processes
-nextflow.preview.types = true
+nextflow.enable.types = true
 
 // Print pipeline information
 workflow header {
 
 log.info """
 =======================================================================================
-QC preprocessing pipeline
+AbPreP: Antibody Preprocessing Pipeline
 =======================================================================================
 
 Created by Leon Wang
@@ -17,12 +17,6 @@ Cite this pipeline @
 
 =======================================================================================
 Workflow run parameters 
-=======================================================================================
-read directory     : ${params.read_dir}
-sample sheet       : ${params.sample_sheet}
-reference genome   : ${params.phagemid_ref}
-matchbox script    : ${params.matchbox_script}
-matchbox parameters: ${params.matchbox_parameters}
 =======================================================================================
 """
 }

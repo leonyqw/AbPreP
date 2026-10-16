@@ -9,3 +9,6 @@ report/report_files
 report/dashboard_files
 report/*.html
 report*.html
+.nf-test.log
+test_params.yaml
+nano_params.yaml
