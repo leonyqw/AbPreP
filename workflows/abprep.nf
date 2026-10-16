@@ -26,7 +26,7 @@ workflow ABPREP {
     read_dir: String
     sample_sheet: String
     phagemid_ref: Path
-    matchbox_script: Path
+    // matchbox_script: Path
     matchbox_parameters: Path
     nanobody: Boolean
     multiqc_config: Path
@@ -46,7 +46,7 @@ workflow ABPREP {
     // Match and output all
     matchbox_out_all = MATCHBOX_ALL(
         ch_sample,
-        matchbox_script,
+        // matchbox_script,
         matchbox_parameters,
         "all",
         nanobody,
@@ -55,7 +55,7 @@ workflow ABPREP {
     // Match and output only the best match
     matchbox_out_best = MATCHBOX_BEST(
         ch_sample,
-        matchbox_script,
+        // matchbox_script,
         matchbox_parameters,
         "all-best",
         nanobody,

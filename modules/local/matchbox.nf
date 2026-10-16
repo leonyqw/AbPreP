@@ -34,13 +34,6 @@ process RUN_MATCHBOX {
     )
     matchbox_script: Path // Path to matchbox script
     matchbox_parameters: Map // Map of parameters for matchbox script
-    // LCss: String // Light chain signal sequence
-    // LC_after_lambda: String // Lambda light chain constant region sequence
-    // LC_after_kappa: String // Kappa light chain constant region sequence
-    // HCss: String // Heavy chain signal sequence
-    // HC_after: String // Sequence directly after variable heavy chain sequence
-    // nanobody_ss: String // Nanobody signal sequence
-    // nanobody_after: String // Sequence directly after nanobody sequence
     match_param: String // Matchbox script matching argument
     nanobody: Boolean // Matchbox parameter for extracting nanobody instead of antibody sequences
 
@@ -51,10 +44,6 @@ process RUN_MATCHBOX {
         heavy_chain: file("${barcode}_heavy.fasta"), 
         light_chain: file("${barcode}_light.fasta", optional: true)
     )
-    // matchbox_stats: Path = file("${barcode}_count.csv")
-    // matchbox_files = tuple(barcode, 
-    //     file("${barcode}_heavy.fasta"), 
-    //     file("${barcode}_light.fasta", optional: true))
 
     /*
     Run matchbox script, output only heavy and light chain reads, and statistics
@@ -90,9 +79,7 @@ workflow MATCHBOX {
 
 	// Declare inputs required for the process
     take:
-    // files = Tuple<String, Path> // Tuple for sample name, and path for DNA sequence fastq files
     sample: Sample
-    matchbox_script: Path // Path to matchbox script
     matchbox_parameters: Path // Path to matchbox parameters
     match_param: String // Matchbox script matching argument
     nanobody: Boolean // True or false flag for nanobody extraction
@@ -111,11 +98,14 @@ workflow MATCHBOX {
     // }
     // .view()
 
+
+
     // Run matchbox process
-    matchbox_out = RUN_MATCHBOX(sample, matchbox_script, parameters, match_param, nanobody)
+    matchbox_out = RUN_MATCHBOX(sample, 
+    file("${projectDir}/bin/matchbox_preprocessing_script.mb"), 
+    parameters, match_param, nanobody)
 
 	// Declare outputs
 	emit:
-	// matchbox_out: Channel<Matchbox_Output> = matchbox_out
     matchbox_out
 }

@@ -62,14 +62,6 @@
       "description": "Matchbox related files and parameters required for the workflow",
       "default": "",
       "properties": {
-        "matchbox_script": {
-          "type": "string",
-          "description": "Path to the matchbox script file",
-          "format": "file-path",
-          "exists": true,
-          "fa_icon": "fas fa-file-code",
-          "pattern": "^\\S+\\.mb$"
-        },
         "matchbox_parameters": {
           "type": "string",
           "description": "Path to the matchbox parameters file",
@@ -79,7 +71,7 @@
           "format": "file-path"
         }
       },
-      "required": ["matchbox_script", "matchbox_parameters"],
+      "required": ["matchbox_parameters"],
       "fa_icon": "fas fa-fire-alt"
     },
     "antibody_extraction_options": {

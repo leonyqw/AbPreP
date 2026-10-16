@@ -25,7 +25,7 @@ params {
     read_dir: String
     sample_sheet: String
     phagemid_ref: Path
-    matchbox_script: Path
+    // matchbox_script: Path
     matchbox_parameters: Path
     help: Boolean
     enable_conda: Boolean
@@ -72,7 +72,7 @@ workflow {
         params.read_dir,
         params.sample_sheet,
         params.phagemid_ref,
-        params.matchbox_script,
+        // params.matchbox_script,
         params.matchbox_parameters,
         params.nanobody,
         params.multiqc_config,
