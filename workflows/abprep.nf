@@ -36,8 +36,22 @@ workflow ABPREP {
     // Parse samplesheet and get samples
     ch_sample = PARSE_SAMPLE_SHEET(read_dir, sample_sheet)
 
+    // Create channel of split fastq files for each sample
+    ch_sample_split = ch_sample.flatMap { sample ->
+        sample.file
+        .splitFastq( by: 100, file: true )
+        .withIndex(1)
+        .collect { split_file, index ->
+                record(
+                    barcode: sample.barcode,
+                    file_num: index,
+                    file: split_file
+                )
+            }
+    }
+
     // QC: Identify % aligning to the reference (gDNA/helper phage contamination)
-    minimap_out = MINIMAP2(ch_sample, phagemid_ref)
+    minimap_out = MINIMAP2(ch_sample_split, phagemid_ref)
 
     // Convert and index the SAM file format to BAM file format
     sam_out = SAMTOOLS(minimap_out)
@@ -45,8 +59,7 @@ workflow ABPREP {
     // Extract heavy and light chain pairs from the reads
     // Match and output all
     matchbox_out_all = MATCHBOX_ALL(
-        ch_sample,
-        // matchbox_script,
+        ch_sample_split,
         matchbox_parameters,
         "all",
         nanobody,
@@ -54,8 +67,7 @@ workflow ABPREP {
 
     // Match and output only the best match
     matchbox_out_best = MATCHBOX_BEST(
-        ch_sample,
-        // matchbox_script,
+        ch_sample_split,
         matchbox_parameters,
         "all-best",
         nanobody,
