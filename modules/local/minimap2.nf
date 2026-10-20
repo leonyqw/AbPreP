@@ -32,7 +32,7 @@ process MINIMAP2 {
 	minimap_out = record(
 					barcode: barcode,
 					file_num: file_num,
-					file: file("${barcode}_${file_num}_aligned.sam")
+					file: file("${barcode}-${file_num}_aligned.sam")
 				)
 
 	/*
@@ -49,11 +49,11 @@ process MINIMAP2 {
 	-ax map-ont \\
 	${reference} \\
 	${file} \\
-	-o "${barcode}_${file_num}_aligned.sam"
+	-o "${barcode}-${file_num}_aligned.sam"
     """
 
 	stub:
 	"""
-	touch ${barcode}_${file_num}_aligned.sam
+	touch ${barcode}-${file_num}_aligned.sam
 	"""
 }

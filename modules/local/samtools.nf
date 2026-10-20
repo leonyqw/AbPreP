@@ -35,31 +35,33 @@ process SAMTOOLS {
 	// 	aligned_stats: file("${barcode}_flagstat.txt"), 
 	// 	read_lengths: file("${barcode}_read_lengths.tsv")
 	// )
-	aligned_sorted_read: Path = file("${barcode}_${file_num}_aligned_sorted.bam")
-	index: Path = file("${barcode}_${file_num}_aligned_sorted.bam.bai")
-	stats: Path = file("${barcode}_${file_num}_stats.txt")
-	read_lengths: Path = file("${barcode}_${file_num}_read_lengths.tsv")
+	record(
+		aligned_sorted_read: file("${barcode}-${file_num}_aligned_sorted.bam"),
+		index: file("${barcode}-${file_num}_aligned_sorted.bam.bai"),
+		stats: file("${barcode}-${file_num}_stats.txt"),
+		read_lengths: file("${barcode}-${file_num}_read_lengths.tsv")
+	)
 
     script:
     """
 	# View and convert file from SAM to BAM format. Sort alignments and outputs the file in BAM format
-	samtools view -b "${file}" | samtools sort -o "${barcode}_${file_num}_aligned_sorted.bam"
+	samtools view -b "${file}" | samtools sort -o "${barcode}-${file_num}_aligned_sorted.bam"
 	
 	# Index BAM file for fast random access
-	samtools index "${barcode}_${file_num}_aligned_sorted.bam"
+	samtools index "${barcode}-${file_num}_aligned_sorted.bam"
 
 	# Counts the number of alignments for each FLAG type
-	samtools stats "${barcode}_${file_num}_aligned_sorted.bam" > "${barcode}_${file_num}_stats.txt"
+	samtools stats "${barcode}-${file_num}_aligned_sorted.bam" > "${barcode}-${file_num}_stats.txt"
 
 	# Extract read lengths
-	samtools view "${barcode}_${file_num}_aligned_sorted.bam" -F 256 -F 2048 | awk '{print length(\$10)}' > "${barcode}_${file_num}_read_lengths.tsv"
+	samtools view "${barcode}-${file_num}_aligned_sorted.bam" -F 256 -F 2048 | awk '{print length(\$10)}' > "${barcode}-${file_num}_read_lengths.tsv"
 	"""
 
 	stub:
 	"""
-	touch ${barcode}_${file_num}_aligned_sorted.bam
-	touch ${barcode}_${file_num}_aligned_sorted.bam.bai
-	touch ${barcode}_${file_num}_stats.txt
-	touch ${barcode}_${file_num}_read_lengths.tsv
+	touch ${barcode}-${file_num}_aligned_sorted.bam
+	touch ${barcode}-${file_num}_aligned_sorted.bam.bai
+	touch ${barcode}-${file_num}_stats.txt
+	touch ${barcode}-${file_num}_read_lengths.tsv
 	"""
 }

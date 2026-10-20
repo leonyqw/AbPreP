@@ -32,8 +32,8 @@ process RIOT {
 	output:
     record(
         barcode: barcode,
-        heavy_chain: file("${barcode}_${file_num}_annot_heavy.csv"), 
-        light_chain: file("${barcode}_${file_num}_annot_light.csv", optional: true)
+        heavy_chain: file("${barcode}-${file_num}_annot_heavy.csv"), 
+        light_chain: file("${barcode}-${file_num}_annot_light.csv", optional: true)
     )
 
     /*
@@ -47,20 +47,20 @@ process RIOT {
     // If only nanobody, run riot on heavy chain
     if (params.nanobody) {
     """
-    riot_na -f ${heavy_chain} --species VICUGNA_PACOS -p 16 -o "${barcode}_${file_num}_annot_heavy.csv"
+    riot_na -f ${heavy_chain} --species VICUGNA_PACOS -p 16 -o "${barcode}-${file_num}_annot_heavy.csv"
     """
     }
     // Otheriwse run riot on antibody sequences for heavy and light chain
     else {
     """
-    riot_na -f ${heavy_chain} --species HOMO_SAPIENS -p 16 -o "${barcode}_${file_num}_annot_heavy.csv"
-    riot_na -f ${light_chain} --species HOMO_SAPIENS -p 16 -o "${barcode}_${file_num}_annot_light.csv"
+    riot_na -f ${heavy_chain} --species HOMO_SAPIENS -p 16 -o "${barcode}-${file_num}_annot_heavy.csv"
+    riot_na -f ${light_chain} --species HOMO_SAPIENS -p 16 -o "${barcode}-${file_num}_annot_light.csv"
     """
     }
 
     stub:
     """
-    touch ${barcode}_${file_num}_annot_heavy.csv
-    touch ${barcode}_${file_num}_annot_light.csv
+    touch ${barcode}-${file_num}_annot_heavy.csv
+    touch ${barcode}-${file_num}_annot_light.csv
     """
 }
