@@ -24,7 +24,7 @@ option_list <- list(
 
 opt <- parse_args(OptionParser(option_list = option_list))
 cols_keep_path  <- opt$keep_cols
-inputs  <- opt$input
+files  <- opt$input
 
 ################################################
 ## READ IN FILES.                             ##
@@ -43,24 +43,24 @@ columns_to_keep <- columns_to_keep_df |>
 # Combine all heavy chain sequence files together, and keep only required variables
 H_chains <- read_csv(
   dir_ls(
-    path = inputs,
+    path = files,
     glob = "*_heavy.csv"),
   col_select = any_of(columns_to_keep[[1]]), 
   id = "sample") |>
   distinct(sequence_header, .keep_all = TRUE) |>
   # remove path from sample
-  mutate(sample = str_replace_all(basename(sample), "_annot_heavy.csv", ""))
+  mutate(sample = str_replace_all(basename(sample), "_\\d+_annot_heavy\\.csv", ""))
 
 # Combine all light chain sequences files together, and keep only required variables
 L_chains <- read_csv(
   dir_ls(
-    path = inputs,
+    path = files,
     glob = "*_light.csv"),
   col_select = any_of(columns_to_keep[[1]]),
   id = "sample") |>
   distinct(sequence_header, .keep_all = TRUE) |>
   # remove path from sample
-  mutate(sample = str_replace_all(basename(sample), "_annot_light.csv", ""))
+  mutate(sample = str_replace_all(basename(sample), "_\\d+_annot_light\\.csv", ""))
 
 # combine the H and L chains
 both_chains <- full_join(H_chains, L_chains, by = "sequence_header", 
