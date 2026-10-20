@@ -6,7 +6,7 @@ Utilize samtools to write SAM file to BAM file.
 nextflow.enable.types = true
 
 process SAMTOOLS {
-	tag "${barcode}"
+	tag "${barcode}, file:${file_num}"
 	label "process_high"
 
 	// Enable conda and install samtools if conda profile is set
@@ -22,6 +22,7 @@ process SAMTOOLS {
 	// (barcode, aligned_read_file): Tuple<String, Path> 
 	record(
 		barcode: String, 
+		file_num: Integer,
 		file: Path
 	)
 	
@@ -34,31 +35,31 @@ process SAMTOOLS {
 	// 	aligned_stats: file("${barcode}_flagstat.txt"), 
 	// 	read_lengths: file("${barcode}_read_lengths.tsv")
 	// )
-	aligned_sorted_read: Path = file("${barcode}_aligned_sorted.bam")
-	index: Path = file("${barcode}_aligned_sorted.bam.bai")
-	stats: Path = file("${barcode}_stats.txt")
-	read_lengths: Path = file("${barcode}_read_lengths.tsv")
+	aligned_sorted_read: Path = file("${barcode}_${file_num}_aligned_sorted.bam")
+	index: Path = file("${barcode}_${file_num}_aligned_sorted.bam.bai")
+	stats: Path = file("${barcode}_${file_num}_stats.txt")
+	read_lengths: Path = file("${barcode}_${file_num}_read_lengths.tsv")
 
     script:
     """
 	# View and convert file from SAM to BAM format. Sort alignments and outputs the file in BAM format
-	samtools view -b "${file}" | samtools sort -o "${barcode}_aligned_sorted.bam"
+	samtools view -b "${file}" | samtools sort -o "${barcode}_${file_num}_aligned_sorted.bam"
 	
 	# Index BAM file for fast random access
-	samtools index "${barcode}_aligned_sorted.bam"
+	samtools index "${barcode}_${file_num}_aligned_sorted.bam"
 
 	# Counts the number of alignments for each FLAG type
-	samtools stats "${barcode}_aligned_sorted.bam" > "${barcode}_stats.txt"
+	samtools stats "${barcode}_${file_num}_aligned_sorted.bam" > "${barcode}_${file_num}_stats.txt"
 
 	# Extract read lengths
-	samtools view "${barcode}_aligned_sorted.bam" -F 256 -F 2048 | awk '{print length(\$10)}' > ${barcode}_read_lengths.tsv
+	samtools view "${barcode}_${file_num}_aligned_sorted.bam" -F 256 -F 2048 | awk '{print length(\$10)}' > "${barcode}_${file_num}_read_lengths.tsv"
 	"""
 
 	stub:
 	"""
-	touch ${barcode}_aligned_sorted.bam
-	touch ${barcode}_aligned_sorted.bam.bai
-	touch ${barcode}_stats.txt
-	touch ${barcode}_read_lengths.tsv
+	touch ${barcode}_${file_num}_aligned_sorted.bam
+	touch ${barcode}_${file_num}_aligned_sorted.bam.bai
+	touch ${barcode}_${file_num}_stats.txt
+	touch ${barcode}_${file_num}_read_lengths.tsv
 	"""
 }

@@ -15,10 +15,9 @@ include { MATCHBOX as MATCHBOX_ALL  } from '../modules/local/matchbox'
 include { RIOT as RIOT_ALL          } from '../modules/local/riot'
 include { MATCHBOX as MATCHBOX_BEST } from '../modules/local/matchbox'
 include { RIOT as RIOT_BEST         } from '../modules/local/riot'
-include { ABPREP_MULTIQC                    } from '../modules/local/abprep_multiqc_plugin'
-// include { MULTIQC } from 'nf-core/multiqc'
-include { COUNTS_MATRIX              } from '../modules/local/counts_matrix'
-
+include { CAT_FILES                 } from '../modules/local/cat_files'
+include { ABPREP_MULTIQC            } from '../modules/local/abprep_multiqc_plugin'
+include { COUNTS_MATRIX             } from '../modules/local/counts_matrix'
 
 workflow ABPREP {
 
@@ -26,7 +25,6 @@ workflow ABPREP {
     read_dir: String
     sample_sheet: String
     phagemid_ref: Path
-    // matchbox_script: Path
     matchbox_parameters: Path
     nanobody: Boolean
     multiqc_config: Path
@@ -77,12 +75,19 @@ workflow ABPREP {
     riot_out_best = RIOT_BEST(matchbox_out_best)
     riot_out_all = RIOT_ALL(matchbox_out_all)
 
+    // TODO combine same barcodes together for multiqc?
+    // TODO change multiqc to remove XX from barcode_01_XX
+
+    // // Merge files together
+    // a = riot_out_best.map {sample -> tuple(sample.barcode, sample.heavy_chain)}.groupBy().map { barcode, bag -> tuple(barcode, bag.toList()) }
+    // riot_out_best_cat = CAT_FILES(a)
+
     // Collect all files for MultiQC report
     ch_multiqc_files = channel.empty()
     ch_multiqc_files = ch_multiqc_files.mix(sam_out.stats)
         .mix(sam_out.read_lengths)
         .mix(matchbox_out_best.map { files -> files.matchbox_stats })
-        .mix(riot_out_best.flatMap { files -> files })
+        .mix(riot_out_best.flatMap { sample -> [sample.heavy_chain, sample.light_chain] })
         .toList()
 
     // Run Multiqc and AbPreP plugin to generate qc report
@@ -92,9 +97,9 @@ workflow ABPREP {
         logo
     )
     
-    // Create counts matrix for downstream analysis
-    def ch_riot_cols_keep       = file("$projectDir/assets/columns_to_keep.csv", checkIfExists: true)
-    riot_files = riot_out_best.flatMap { files -> files }.toList()
+    // // Create counts matrix for downstream analysis
+    def ch_riot_cols_keep = file("$projectDir/assets/columns_to_keep.csv", checkIfExists: true)
+    riot_files = riot_out_best.flatMap { sample -> [sample.heavy_chain, sample.light_chain] }.toList().view()
     counts_matrix = COUNTS_MATRIX(riot_files, ch_riot_cols_keep)
 
     emit:

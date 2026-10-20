@@ -17,7 +17,7 @@ process CONCAT_READS {
         files: List<Path>
     )
 
-    // Output sample: tuple containing barcode and merged file
+    // Output sample: record containing barcode and merged file
     output:
     record(
         barcode: barcode, 
@@ -63,16 +63,16 @@ workflow PARSE_SAMPLE_SHEET {
     }
 
     // Read and concat (if multiple files) into one file per sample / barcode
-    sample = CONCAT_READS(barcode_files)
-    // CONCAT_READS(barcode_files)
+    ch_sample = CONCAT_READS(barcode_files)
+
 
 	// Declare outputs
     emit:
-    // sample: Channel<Sample> = sample
-    sample
+    sample: Channel<Sample> = ch_sample
 }
 
-// record Sample {
-//         barcode: String
-//         file: Path
-// }
+record Sample {
+        barcode: String
+        file_num: Integer
+        file: Path
+}

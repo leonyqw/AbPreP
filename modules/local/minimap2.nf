@@ -7,7 +7,7 @@ nextflow.enable.types = true
 
 process MINIMAP2 {
 	
-	tag "${barcode}"
+	tag "${barcode}, file: ${file_num}"
 	label "process_high"
 
 	// Enable conda and install minimap2 if conda profile is set
@@ -19,20 +19,20 @@ process MINIMAP2 {
     'community.wave.seqera.io/library/minimap2:2.30--dde6b0c5fbc82ebd' }"
 
     input:
-	// (barcode, read_file): Tuple<String, Path> 
 	// Record for sample name, and path for DNA sequence fastq files
 	record(
         barcode: String,
+		file_num: Integer,
         file: Path
 	)
 	reference: Path // Path for reference genome
 	
 	// Output tuple with sample name and sam file
 	output:
-	// minimap_out = tuple(barcode, file("${barcode}_aligned.sam"))
 	minimap_out = record(
-					barcode: barcode, 
-					file: file("${barcode}_aligned.sam")
+					barcode: barcode,
+					file_num: file_num,
+					file: file("${barcode}_${file_num}_aligned.sam")
 				)
 
 	/*
@@ -49,16 +49,11 @@ process MINIMAP2 {
 	-ax map-ont \\
 	${reference} \\
 	${file} \\
-	-o "${barcode}_aligned.sam"
+	-o "${barcode}_${file_num}_aligned.sam"
     """
 
 	stub:
 	"""
-	touch ${barcode}_aligned.sam
+	touch ${barcode}_${file_num}_aligned.sam
 	"""
 }
-
-// record Sample {
-//         barcode: String
-//         file: Path
-// }

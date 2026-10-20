@@ -8,10 +8,11 @@ nextflow.enable.types = true
 // Create record type for sample
 record Sample {
     barcode: String
+    file_num: Integer
     file: Path
 }
 
-record Matchbox_Output {
+record MatchboxOutput {
     barcode: String
     matchbox_stats: Path
     heavy_chain: Path
@@ -19,7 +20,7 @@ record Matchbox_Output {
 }
 
 process RUN_MATCHBOX {
-	tag "${barcode}"
+	tag "${barcode}, file:${file_num}"
     label "process_high"
 
     // Use Singularity container or pull from Docker container if singularity profile is enabled
@@ -30,6 +31,7 @@ process RUN_MATCHBOX {
     // Record for sample name, and path for DNA sequence fastq files
 	record (
         barcode: String, 
+        file_num: Integer,
         file: Path
     )
     matchbox_script: Path // Path to matchbox script
@@ -39,10 +41,11 @@ process RUN_MATCHBOX {
 
     output:
     record(
-        barcode: barcode, 
-        matchbox_stats: file("${barcode}_matchbox_counts.csv"), 
-        heavy_chain: file("${barcode}_heavy.fasta"), 
-        light_chain: file("${barcode}_light.fasta", optional: true)
+        barcode: barcode,
+        file_num: file_num,
+        matchbox_stats: file("${barcode}_${file_num}_matchbox_counts.csv"), 
+        heavy_chain: file("${barcode}_${file_num}_heavy.fasta"), 
+        light_chain: file("${barcode}_${file_num}_light.fasta", optional: true)
     )
 
     /*
@@ -58,20 +61,20 @@ process RUN_MATCHBOX {
 	# Run matchbox script to extract heavy and light chain reads
     matchbox \\
     -s ${matchbox_script} -e 0.3 \\
-    -a "seqid='${barcode}', LCss = ${matchbox_parameters.LCss}, LC_after_lambda = ${matchbox_parameters.LC_after_lambda}, LC_after_kappa = ${matchbox_parameters.LC_after_kappa}, HCss = ${matchbox_parameters.HCss}, HC_after = ${matchbox_parameters.HC_after}, nanobody_ss = ${matchbox_parameters.nanobody_ss}, nanobody_after = ${matchbox_parameters.nanobody_after}, nanobody = ${nanobody}" \\
+    -a "seqid='${barcode}_${file_num}', LCss = ${matchbox_parameters.LCss}, LC_after_lambda = ${matchbox_parameters.LC_after_lambda}, LC_after_kappa = ${matchbox_parameters.LC_after_kappa}, HCss = ${matchbox_parameters.HCss}, HC_after = ${matchbox_parameters.HC_after}, nanobody_ss = ${matchbox_parameters.nanobody_ss}, nanobody_after = ${matchbox_parameters.nanobody_after}, nanobody = ${nanobody}" \\
     --with-reverse-complement \\
     -m ${match_param} \\
     ${file}
 
     # Divide the total number of reads by 2 (currently matchbox totals include both forward and reverse reads)
-    awk -F',' 'BEGIN{OFS=","} \$1=="total reads"{\$2=\$2/2} {print}' ${barcode}_matchbox_counts.csv > tmp.csv && mv tmp.csv ${barcode}_matchbox_counts.csv
+    awk -F',' 'BEGIN{OFS=","} \$1=="total reads"{\$2=\$2/2} {print}' ${barcode}_${file_num}_matchbox_counts.csv > tmp.csv && mv tmp.csv ${barcode}_${file_num}_matchbox_counts.csv
     """
 
     stub:
     """
-    touch ${barcode}_matchbox_counts.csv
-    touch ${barcode}_heavy.fasta
-    touch ${barcode}_light.fasta
+    touch ${barcode}_${file_num}_matchbox_counts.csv
+    touch ${barcode}_${file_num}_heavy.fasta
+    touch ${barcode}_${file_num}_light.fasta
     """
 }
 
@@ -98,12 +101,10 @@ workflow MATCHBOX {
     // }
     // .view()
 
-
-
     // Run matchbox process
     matchbox_out = RUN_MATCHBOX(sample, 
-    file("${projectDir}/bin/matchbox_preprocessing_script.mb"), 
-    parameters, match_param, nanobody)
+        file("${projectDir}/bin/matchbox_preprocessing_script.mb"), 
+        parameters, match_param, nanobody)
 
 	// Declare outputs
 	emit:
