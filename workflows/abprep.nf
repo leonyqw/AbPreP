@@ -11,6 +11,7 @@ nextflow.enable.types = true
 include { PARSE_SAMPLE_SHEET        } from '../modules/local/file_import'
 include { MINIMAP2                  } from '../modules/local/minimap2'
 include { SAMTOOLS                  } from '../modules/local/samtools'
+include { SAMTOOLS_STATS              } from '../modules/local/samtools'
 include { MATCHBOX as MATCHBOX_ALL  } from '../modules/local/matchbox'
 include { RIOT as RIOT_ALL          } from '../modules/local/riot'
 include { MATCHBOX as MATCHBOX_BEST } from '../modules/local/matchbox'
@@ -29,7 +30,7 @@ workflow ABPREP {
     nanobody: Boolean
     multiqc_config: Path
     logo: Path
-num_reads: Integer
+    num_reads: Integer
 
     main:
     // Parse samplesheet and get samples
@@ -54,6 +55,9 @@ num_reads: Integer
 
     // Convert and index the SAM file format to BAM file format
     sam_out = SAMTOOLS(minimap_out)
+    sam_merged_ch = sam_out.map {sample -> tuple(sample.barcode, sample.aligned_sorted_read)}.groupBy()
+    .map { barcode, bag -> record(barcode: barcode, files: bag.toList()) }
+    sam_stats_out = SAMTOOLS_STATS(sam_merged_ch)
 
     // Extract heavy and light chain pairs from the reads
     // Match and output all
@@ -77,7 +81,10 @@ num_reads: Integer
     riot_out_all = RIOT_ALL(matchbox_out_all)
 
     // TODO combine same barcodes together for multiqc?
-    // TODO change multiqc to remove XX from barcode_01_XX
+    // TODO Count lines? countfastq, if greater than number, don't go othrough split
+    // TODO OR, create separate process in samtools to aggregate / do the output for each combined output for stats and read length
+    // TODO in matchbox, riot, read length modules, reformat so reads in barcodes, but then join same barcodes together for multiqc and counts matrix. Append to each dict if it's same key
+    // TODO combine riot and matchbox outputs in multiqc?
 
     // // Merge files together
     // a = riot_out_best.map {sample -> tuple(sample.barcode, sample.heavy_chain)}.groupBy().map { barcode, bag -> tuple(barcode, bag.toList()) }
