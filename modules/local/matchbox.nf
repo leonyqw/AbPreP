@@ -19,6 +19,8 @@ record MatchboxOutput {
     light_chain: Path?
 }
 
+include { CAT_FILES } from './cat_files'
+
 process RUN_MATCHBOX {
 	tag "${barcode}, file:${file_num}"
     label "process_high"

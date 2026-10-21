@@ -16,7 +16,10 @@ include { MATCHBOX as MATCHBOX_ALL  } from '../modules/local/matchbox'
 include { RIOT as RIOT_ALL          } from '../modules/local/riot'
 include { MATCHBOX as MATCHBOX_BEST } from '../modules/local/matchbox'
 include { RIOT as RIOT_BEST         } from '../modules/local/riot'
-include { CAT_FILES                 } from '../modules/local/cat_files'
+include { CAT_FILES as CAT_MATCHBOX_STATS_1   } from '../modules/local/cat_files'
+include { CAT_FILES as CAT_MATCHBOX_STATS_2   } from '../modules/local/cat_files'
+include { CAT_FILES as CAT_RIOT_1   } from '../modules/local/cat_files'
+include { CAT_FILES as CAT_RIOT_2   } from '../modules/local/cat_files'
 include { ABPREP_MULTIQC            } from '../modules/local/abprep_multiqc_plugin'
 include { COUNTS_MATRIX             } from '../modules/local/counts_matrix'
 
@@ -55,8 +58,10 @@ workflow ABPREP {
 
     // Convert and index the SAM file format to BAM file format
     sam_out = SAMTOOLS(minimap_out)
-    sam_merged_ch = sam_out.map {sample -> tuple(sample.barcode, sample.aligned_sorted_read)}.groupBy()
-    .map { barcode, bag -> record(barcode: barcode, files: bag.toList()) }
+    sam_merged_ch = sam_out.map {sample -> tuple(sample.barcode, sample.aligned_sorted_read)}
+        .groupBy()
+        .map { barcode, bag -> record(barcode: barcode, files: bag.toList()) }
+    // Merge split sample files together and get stats
     sam_stats_out = SAMTOOLS_STATS(sam_merged_ch)
 
     // Extract heavy and light chain pairs from the reads
@@ -67,6 +72,11 @@ workflow ABPREP {
         "all",
         nanobody,
     )
+    // Group matchbox counts stats per sample and cat stats together
+    matchbox_counts_all_ch = matchbox_out_all.map {sample -> tuple(sample.barcode, sample.matchbox_stats)}
+        .groupBy()
+        .map { barcode, bag -> record(barcode: barcode, files: bag.toList()) }
+    matchbox_stats_all_cat = CAT_MATCHBOX_STATS_1(matchbox_counts_all_ch)
 
     // Match and output only the best match
     matchbox_out_best = MATCHBOX_BEST(
@@ -75,6 +85,11 @@ workflow ABPREP {
         "all-best",
         nanobody,
     )
+    // Group matchbox counts stats per sample and cat stats together
+    matchbox_counts_best_ch = matchbox_out_best.map {sample -> tuple(sample.barcode, sample.matchbox_stats)}
+        .groupBy()
+        .map { barcode, bag -> record(barcode: barcode, files: bag.toList()) }
+    matchbox_stats_best_cat = CAT_MATCHBOX_STATS_2(matchbox_counts_best_ch)
 
     // Annotate heavy and light chain sequences
     riot_out_best = RIOT_BEST(matchbox_out_best)
@@ -125,14 +140,14 @@ workflow ABPREP {
     read_lengths         = sam_stats_out.map {
         output -> output.read_lengths
     }
-    matchbox_stats_best  = matchbox_out_best.map {
-        output -> output.matchbox_stats
+    matchbox_stats_best  = matchbox_stats_best_cat.map {
+        output -> output.file
     }
     matchbox_files_best  = matchbox_out_best.map {
         output -> tuple(output.heavy_chain, output.light_chain)
     }
-    matchbox_stats_all   = matchbox_out_all.map { 
-        output -> output.matchbox_stats
+    matchbox_stats_all   = matchbox_stats_all_cat.map { 
+        output -> output.file
     }
     matchbox_files_all   = matchbox_out_all.map { 
         output -> tuple(output.heavy_chain, output.light_chain)
