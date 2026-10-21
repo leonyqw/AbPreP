@@ -29,6 +29,7 @@ workflow ABPREP {
     nanobody: Boolean
     multiqc_config: Path
     logo: Path
+num_reads: Integer
 
     main:
     // Parse samplesheet and get samples
@@ -37,7 +38,7 @@ workflow ABPREP {
     // Create channel of split fastq files for each sample
     ch_sample_split = ch_sample.flatMap { sample ->
         sample.file
-        .splitFastq( by: 100, file: true )
+        .splitFastq( by: num_reads, file: true )
         .withIndex(1)
         .collect { split_file, index ->
                 record(
@@ -84,10 +85,11 @@ workflow ABPREP {
 
     // Collect all files for MultiQC report
     ch_multiqc_files = channel.empty()
-    ch_multiqc_files = ch_multiqc_files.mix(sam_out.stats)
-        .mix(sam_out.read_lengths)
+    ch_multiqc_files = ch_multiqc_files
+        // .mix(sam_out.stats)
+        .mix(sam_stats_out.flatMap { files -> [files.read_lengths, files.stats] })
         .mix(matchbox_out_best.map { files -> files.matchbox_stats })
-        .mix(riot_out_best.flatMap { sample -> [sample.heavy_chain, sample.light_chain] })
+        .mix(riot_out_best.flatMap { files -> [files.heavy_chain, files.light_chain] })
         .toList()
 
     // Run Multiqc and AbPreP plugin to generate qc report

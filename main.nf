@@ -25,6 +25,7 @@ params {
     nanobody: Boolean
     multiqc_config: Path
     logo: Path
+    num_reads: Integer
 }
 
 workflow {
@@ -64,7 +65,8 @@ workflow {
         params.matchbox_parameters,
         params.nanobody,
         params.multiqc_config,
-        params.logo
+        params.logo,
+        params.num_reads
     )
 
     publish:
