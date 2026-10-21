@@ -1,11 +1,11 @@
 /*
-Create a counts matrix for downstream analysis.
+Process to concatenate CSV files together.
 */
 
 // Enable typed processes
 nextflow.enable.types = true
 
-process CAT_FILES {
+process CAT_CSV {
     label "process_medium"
 
 	// Declare inputs required for the process
@@ -16,29 +16,18 @@ process CAT_FILES {
     )
 
     output:
-    // counts_matrix: Path = file("counts_matrix.csv")
     record(
         barcode: barcode,
         file: file("${barcode}_*")
     )
     
     /*
-    Run sequence counts R script
+    Run script to cat files together
     */
     script:
+    // Get file suffix name after the barcode
     def suffix = (files[0].name =~ /^barcode\d+-\d+_(.*)/)[0][1]
     """
     awk 'NR==1 || FNR>1' *.csv > ${barcode}_${suffix}
     """
-    // if sometihng {
-    //     """"""""
-    // }
-    // else {
-
-    // }
-
-    // stub:
-    // """
-    // touch .csv
-    // """
 }

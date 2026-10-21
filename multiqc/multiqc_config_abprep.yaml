@@ -28,6 +28,13 @@ extra_fn_clean_exts:
   - "_flagstat"
   - "_stats"
   - "_read_lengths"
+  # - type: regex_keep
+  #   pattern: 'barcode\d+'
+
+table_sample_merge:
+  "file_chunk":
+    - type: regex
+      pattern: '_\d{2}$'
 
 # Ignore these files / directories / paths when searching for logs
 fn_ignore_dirs:

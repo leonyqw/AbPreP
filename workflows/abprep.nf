@@ -16,10 +16,10 @@ include { MATCHBOX as MATCHBOX_ALL  } from '../modules/local/matchbox'
 include { RIOT as RIOT_ALL          } from '../modules/local/riot'
 include { MATCHBOX as MATCHBOX_BEST } from '../modules/local/matchbox'
 include { RIOT as RIOT_BEST         } from '../modules/local/riot'
-include { CAT_FILES as CAT_MATCHBOX_STATS_1   } from '../modules/local/cat_files'
-include { CAT_FILES as CAT_MATCHBOX_STATS_2   } from '../modules/local/cat_files'
-include { CAT_FILES as CAT_RIOT_1   } from '../modules/local/cat_files'
-include { CAT_FILES as CAT_RIOT_2   } from '../modules/local/cat_files'
+include { CAT_CSV as CAT_MATCHBOX_STATS_1   } from '../modules/local/cat_csv'
+include { CAT_CSV as CAT_MATCHBOX_STATS_2   } from '../modules/local/cat_csv'
+include { CAT_RIOT as CAT_RIOT_1  } from '../modules/local/cat_riot'
+include { CAT_RIOT as CAT_RIOT_2  } from '../modules/local/cat_riot'
 include { ABPREP_MULTIQC            } from '../modules/local/abprep_multiqc_plugin'
 include { COUNTS_MATRIX             } from '../modules/local/counts_matrix'
 
@@ -73,10 +73,10 @@ workflow ABPREP {
         nanobody,
     )
     // Group matchbox counts stats per sample and cat stats together
-    matchbox_counts_all_ch = matchbox_out_all.map {sample -> tuple(sample.barcode, sample.matchbox_stats)}
+    matchbox_stats_all_ch = matchbox_out_all.map {sample -> tuple(sample.barcode, sample.matchbox_stats)}
         .groupBy()
         .map { barcode, bag -> record(barcode: barcode, files: bag.toList()) }
-    matchbox_stats_all_cat = CAT_MATCHBOX_STATS_1(matchbox_counts_all_ch)
+    matchbox_stats_all_cat_out = CAT_MATCHBOX_STATS_1(matchbox_stats_all_ch)
 
     // Match and output only the best match
     matchbox_out_best = MATCHBOX_BEST(
@@ -86,14 +86,18 @@ workflow ABPREP {
         nanobody,
     )
     // Group matchbox counts stats per sample and cat stats together
-    matchbox_counts_best_ch = matchbox_out_best.map {sample -> tuple(sample.barcode, sample.matchbox_stats)}
+    matchbox_stats_best_ch = matchbox_out_best.map {sample -> tuple(sample.barcode, sample.matchbox_stats)}
         .groupBy()
         .map { barcode, bag -> record(barcode: barcode, files: bag.toList()) }
-    matchbox_stats_best_cat = CAT_MATCHBOX_STATS_2(matchbox_counts_best_ch)
+    matchbox_stats_best_cat_out = CAT_MATCHBOX_STATS_2(matchbox_stats_best_ch)
 
     // Annotate heavy and light chain sequences
-    riot_out_best = RIOT_BEST(matchbox_out_best)
-    riot_out_all = RIOT_ALL(matchbox_out_all)
+    riot_all_out = RIOT_ALL(matchbox_out_all)
+    riot_best_out = RIOT_BEST(matchbox_out_best)
+
+    // Concatenate heavy (and light chains) per barcode from riot outputs
+    riot_all_cat_out = CAT_RIOT_1(nanobody, riot_all_out.collect())
+    riot_best_cat_out = CAT_RIOT_2(nanobody, riot_best_out.collect())
 
     // TODO combine same barcodes together for multiqc?
     // TODO Count lines? countfastq, if greater than number, don't go othrough split
@@ -101,17 +105,13 @@ workflow ABPREP {
     // TODO in matchbox, riot, read length modules, reformat so reads in barcodes, but then join same barcodes together for multiqc and counts matrix. Append to each dict if it's same key
     // TODO combine riot and matchbox outputs in multiqc?
 
-    // // Merge files together
-    // a = riot_out_best.map {sample -> tuple(sample.barcode, sample.heavy_chain)}.groupBy().map { barcode, bag -> tuple(barcode, bag.toList()) }
-    // riot_out_best_cat = CAT_FILES(a)
-
     // Collect all files for MultiQC report
     ch_multiqc_files = channel.empty()
     ch_multiqc_files = ch_multiqc_files
-        // .mix(sam_out.stats)
         .mix(sam_stats_out.flatMap { files -> [files.read_lengths, files.stats] })
-        .mix(matchbox_out_best.map { files -> files.matchbox_stats })
-        .mix(riot_out_best.flatMap { files -> [files.heavy_chain, files.light_chain] })
+        .mix(matchbox_stats_best_cat_out.map { files -> files.file })
+        .mix(riot_best_cat_out.heavy_chain.map { chain -> chain.file })
+        .mix(riot_best_cat_out.light_chain.map { chain -> chain.file })
         .toList()
 
     // Run Multiqc and AbPreP plugin to generate qc report
@@ -121,9 +121,10 @@ workflow ABPREP {
         logo
     )
     
-    // // Create counts matrix for downstream analysis
+    // TODO replace with concatenated file?
+    // Create counts matrix for downstream analysis
     def ch_riot_cols_keep = file("$projectDir/assets/columns_to_keep.csv", checkIfExists: true)
-    riot_files = riot_out_best.flatMap { sample -> [sample.heavy_chain, sample.light_chain] }.toList()
+    riot_files = riot_best_out.flatMap { sample -> [sample.heavy_chain, sample.light_chain] }.toList()
     counts_matrix = COUNTS_MATRIX(riot_files, ch_riot_cols_keep)
 
     emit:
@@ -140,20 +141,20 @@ workflow ABPREP {
     read_lengths         = sam_stats_out.map {
         output -> output.read_lengths
     }
-    matchbox_stats_best  = matchbox_stats_best_cat.map {
+    matchbox_stats_best  = matchbox_stats_best_cat_out.map {
         output -> output.file
     }
     matchbox_files_best  = matchbox_out_best.map {
         output -> tuple(output.heavy_chain, output.light_chain)
     }
-    matchbox_stats_all   = matchbox_stats_all_cat.map { 
+    matchbox_stats_all   = matchbox_stats_all_cat_out.map { 
         output -> output.file
     }
     matchbox_files_all   = matchbox_out_all.map { 
         output -> tuple(output.heavy_chain, output.light_chain)
     }
-    riot_files_best = riot_out_best
-    riot_files_all  = riot_out_all
+    riot_files_best = riot_best_cat_out.heavy_chain.map { chain -> chain.file }.mix(riot_best_cat_out.light_chain.map { chain -> chain.file })
+    riot_files_all  = riot_all_cat_out.heavy_chain.map { chain -> chain.file }.mix(riot_all_cat_out.light_chain.map { chain -> chain.file })
     multiqc_report = multiqc_out
     counts_matrix = counts_matrix
 }
