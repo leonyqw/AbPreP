@@ -25,7 +25,7 @@ process SAMTOOLS {
 		file: Path
 	)
 	
-	// Output aligned reads, bam index file, and aligned QC statistics
+	// Output aligned reads, bam index file
 	output:
 	record(
 		barcode: barcode,
@@ -66,7 +66,7 @@ process SAMTOOLS_STATS {
     'community.wave.seqera.io/library/samtools:1.22.1--eccb42ff8fb55509' }"
 
     input:
-	// Record for sample name, and path for aligned reads after minimap2
+	// Record for sample name, and list of paths for aligned reads for each barcode sample
 	record(
 		barcode: String, 
 		files: List<Path>
