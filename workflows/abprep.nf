@@ -101,26 +101,34 @@ num_reads: Integer
     
     // // Create counts matrix for downstream analysis
     def ch_riot_cols_keep = file("$projectDir/assets/columns_to_keep.csv", checkIfExists: true)
-    riot_files = riot_out_best.flatMap { sample -> [sample.heavy_chain, sample.light_chain] }.toList().view()
+    riot_files = riot_out_best.flatMap { sample -> [sample.heavy_chain, sample.light_chain] }.toList()
     counts_matrix = COUNTS_MATRIX(riot_files, ch_riot_cols_keep)
 
     emit:
     barcode_file         = ch_sample
-    bam_file             = sam_out.aligned_sorted_read
-    bam_index            = sam_out.index
-    stats                = sam_out.stats
-    read_lengths         = sam_out.read_lengths
-    matchbox_stats_best  = matchbox_out_best.map { output ->
-        output.matchbox_stats
+    bam_file             = sam_out.map {
+        output -> output.aligned_sorted_read
     }
-    matchbox_files_best  = matchbox_out_best.map { output ->
-        tuple(output.heavy_chain, output.light_chain)
+    bam_index            = sam_out.map {
+        output -> output.index
     }
-    matchbox_stats_all   = matchbox_out_all.map { output ->
-        output.matchbox_stats
+    stats                = sam_stats_out.map {
+        output -> output.stats
     }
-    matchbox_files_all   = matchbox_out_all.map { output ->
-        tuple(output.heavy_chain, output.light_chain)
+    read_lengths         = sam_stats_out.map {
+        output -> output.read_lengths
+    }
+    matchbox_stats_best  = matchbox_out_best.map {
+        output -> output.matchbox_stats
+    }
+    matchbox_files_best  = matchbox_out_best.map {
+        output -> tuple(output.heavy_chain, output.light_chain)
+    }
+    matchbox_stats_all   = matchbox_out_all.map { 
+        output -> output.matchbox_stats
+    }
+    matchbox_files_all   = matchbox_out_all.map { 
+        output -> tuple(output.heavy_chain, output.light_chain)
     }
     riot_files_best = riot_out_best
     riot_files_all  = riot_out_all
