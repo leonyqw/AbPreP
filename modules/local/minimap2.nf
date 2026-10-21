@@ -29,11 +29,11 @@ process MINIMAP2 {
 	
 	// Output tuple with sample name and sam file
 	output:
-	minimap_out = record(
-					barcode: barcode,
-					file_num: file_num,
-					file: file("${barcode}-${file_num}_aligned.sam")
-				)
+	record(
+		barcode: barcode,
+		file_num: file_num,
+		file: file("${barcode}-${file_num}_aligned.sam")
+	)
 
 	/*
 	Run minimap, mapping reads to a reference and outputs a sam file
