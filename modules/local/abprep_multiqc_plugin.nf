@@ -10,7 +10,7 @@ process ABPREP_MULTIQC {
     label "process_high"
 
     // Use Singularity container or pull from Docker container (linux/amd64) if singularity profile is enabled
-	container "ghcr.io/leonyqw/abprep-multiqc-plugin:latest"
+	container "ghcr.io/leonyqw/abprep-multiqc-plugin:v0.2.1"
 
 	// Declare inputs required for the process
     input:
@@ -22,11 +22,10 @@ process ABPREP_MULTIQC {
     file("AbPreP_multiqc_report.html")
 
     /*
-    Run matchbox script, output only heavy and light chain reads, and statistics
+    Run multiqc / AbPreP plugin to generate QC report
     */
     script:
     """
-	# Run matchbox script to extract heavy and light chain reads
     multiqc . -c ${multiqc_config}
     """
 
