@@ -151,19 +151,10 @@ workflow ABPREP {
             ? tuple(output.heavy_chain)
             : tuple(output.heavy_chain, output.light_chain)
     }
-    
-    // matchbox_files_best  = matchbox_out_best.map {
-    //     output -> tuple(output.heavy_chain, output.light_chain)
-    // }
-
 
     matchbox_stats_all   = matchbox_stats_all_cat_out.map { 
         output -> output.file
     }
-    
-    // matchbox_files_all   = matchbox_out_all.map { 
-    //     output -> tuple(output.heavy_chain, output.light_chain)
-    // }
 
     matchbox_files_all = matchbox_out_all.map { 
         output -> params.nanobody
@@ -178,12 +169,6 @@ workflow ABPREP {
         .map { chain -> chain.file }
         .mix(riot_best_cat_out.light_chain.map { chain -> chain.file })
 
-    // riot_files_best = riot_best_cat_out.heavy_chain
-    // .map { chain -> chain.file }
-    // .mix(riot_best_cat_out.light_chain
-    // .map { chain -> chain.file }
-    // )
-
     riot_files_all = params.nanobody
     ? riot_all_cat_out.heavy_chain
         .map { chain -> chain.file }
@@ -191,12 +176,6 @@ workflow ABPREP {
         .map { chain -> chain.file }
         .mix(riot_all_cat_out.light_chain.map { chain -> chain.file })
 
-    // riot_files_all  = riot_all_cat_out.heavy_chain
-    // .map { chain -> chain.file }
-    // .mix(riot_all_cat_out.light_chain
-    // .map { chain -> chain.file }
-    // )
-    
     multiqc_report = multiqc_out
     counts_matrix = counts_matrix
 }
