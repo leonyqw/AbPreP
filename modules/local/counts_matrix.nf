@@ -6,7 +6,7 @@ Create a counts matrix for downstream analysis.
 nextflow.enable.types = true
 
 process COUNTS_MATRIX {
-    label "process_medium"
+    label "process_high_memory"
 
     // Enable conda and install R packages if conda profile is set
 	conda (params.enable_conda ? "conda-forge::r-readr conda-forge::r-tidyr conda-forge::r-dplyr conda-forge::r-stringr conda-forge::r-optparse conda-forge::r-fs" : null)
@@ -23,7 +23,7 @@ process COUNTS_MATRIX {
     nanobody: Boolean
 
     stage:
-    stageAs files, "data/*" 
+    stageAs files, "data/*"
 
     output:
     // counts_matrix: Path = file("counts_matrix.csv")

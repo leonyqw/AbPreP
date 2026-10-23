@@ -7,7 +7,7 @@ nextflow.enable.types = true
 
 process SAMTOOLS {
 	tag "${barcode}, file:${file_num}"
-	label "process_high"
+	label "process_medium"
 
 	// Enable conda and install samtools if conda profile is set
 	conda (params.enable_conda ? 'bioconda::samtools=1.22.1' : null)
@@ -55,7 +55,7 @@ Utilize samtools to cat split samnple files together, and get stats.
 */
 process SAMTOOLS_STATS {
 	tag "${barcode}"
-	label "process_high"
+	label "process_medium"
 
 	// Enable conda and install samtools if conda profile is set
 	conda (params.enable_conda ? 'bioconda::samtools=1.22.1' : null)

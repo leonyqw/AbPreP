@@ -6,7 +6,7 @@ Process to concatenate CSV files together.
 nextflow.enable.types = true
 
 process CAT_CSV {
-    label "process_medium"
+    label "process_low"
 
 	// Declare inputs required for the process
     input:

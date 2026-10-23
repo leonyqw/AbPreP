@@ -9,6 +9,7 @@ nextflow.enable.types = true
 
 process CONCAT_READS {
     tag "${barcode}"
+    label "process_medium"
 
     input:
     // Record for sample barcode, and list of files with the barcode
@@ -54,6 +55,7 @@ workflow PARSE_SAMPLE_SHEET {
     .map { row -> row.barcode }
 
     // Get list of files for each barcode from the read directory, as well as any files in subdirectories that match
+    
     barcode_files = barcodes
     .map { barcode ->
         record(
