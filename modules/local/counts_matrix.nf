@@ -20,6 +20,7 @@ process COUNTS_MATRIX {
     input:
     files: List<Path>
     columns_to_keep: Path
+    nanobody: Boolean
 
     stage:
     stageAs files, "data/*" 
@@ -32,9 +33,16 @@ process COUNTS_MATRIX {
     Run sequence counts R script
     */
     script:
+    if (nanobody) {
     """
-    create_sequence_table.r --input ./data --keep_cols ${columns_to_keep}
+    create_sequence_table_nano.r --input ./data --keep_cols ${columns_to_keep}
     """
+    }
+    else {
+    """
+    create_sequence_table_fab.r --input ./data --keep_cols ${columns_to_keep}
+    """
+    }
 
     stub:
     """

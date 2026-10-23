@@ -59,8 +59,15 @@ process RIOT {
     }
 
     stub:
+    if (params.nanobody) {
+    """
+    touch ${barcode}-${file_num}_annot_heavy.csv
+    """
+    }
+    else {
     """
     touch ${barcode}-${file_num}_annot_heavy.csv
     touch ${barcode}-${file_num}_annot_light.csv
     """
+    }
 }
