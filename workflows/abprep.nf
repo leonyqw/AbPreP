@@ -99,20 +99,20 @@ workflow ABPREP {
     riot_all_cat_out = CAT_RIOT_1(nanobody, riot_all_out.collect())
     riot_best_cat_out = CAT_RIOT_2(nanobody, riot_best_out.collect())
 
-    // TODO combine same barcodes together for multiqc?
-    // TODO Count lines? countfastq, if greater than number, don't go othrough split
-    // TODO OR, create separate process in samtools to aggregate / do the output for each combined output for stats and read length
-    // TODO in matchbox, riot, read length modules, reformat so reads in barcodes, but then join same barcodes together for multiqc and counts matrix. Append to each dict if it's same key
-    // TODO combine riot and matchbox outputs in multiqc?
-
     // Collect all files for MultiQC report
     ch_multiqc_files = channel.empty()
     ch_multiqc_files = ch_multiqc_files
         .mix(sam_stats_out.flatMap { files -> [files.read_lengths, files.stats] })
         .mix(matchbox_stats_best_cat_out.map { files -> files.file })
         .mix(riot_best_cat_out.heavy_chain.map { chain -> chain.file })
+
+    if (params.nanobody) {
+        ch_multiqc_files = ch_multiqc_files.toList()
+    } else {
+        ch_multiqc_files = ch_multiqc_files
         .mix(riot_best_cat_out.light_chain.map { chain -> chain.file })
         .toList()
+    }
 
     // Run Multiqc and AbPreP plugin to generate qc report
     multiqc_out = ABPREP_MULTIQC(
@@ -121,11 +121,12 @@ workflow ABPREP {
         logo
     )
     
-    // TODO replace with concatenated file?
     // Create counts matrix for downstream analysis
     def ch_riot_cols_keep = file("$projectDir/assets/columns_to_keep.csv", checkIfExists: true)
-    riot_files = riot_best_out.flatMap { sample -> [sample.heavy_chain, sample.light_chain] }.toList()
-    counts_matrix = COUNTS_MATRIX(riot_files, ch_riot_cols_keep)
+    riot_files = riot_best_out.flatMap { sample -> 
+        params.nanobody ? [sample.heavy_chain] : [sample.heavy_chain, sample.light_chain] 
+    }.toList()
+    counts_matrix = COUNTS_MATRIX(riot_files, ch_riot_cols_keep, nanobody)
 
     emit:
     barcode_file         = ch_sample
@@ -144,17 +145,58 @@ workflow ABPREP {
     matchbox_stats_best  = matchbox_stats_best_cat_out.map {
         output -> output.file
     }
-    matchbox_files_best  = matchbox_out_best.map {
-        output -> tuple(output.heavy_chain, output.light_chain)
+    
+    matchbox_files_best = matchbox_out_best.map { 
+        output -> params.nanobody
+            ? tuple(output.heavy_chain)
+            : tuple(output.heavy_chain, output.light_chain)
     }
+    
+    // matchbox_files_best  = matchbox_out_best.map {
+    //     output -> tuple(output.heavy_chain, output.light_chain)
+    // }
+
+
     matchbox_stats_all   = matchbox_stats_all_cat_out.map { 
         output -> output.file
     }
-    matchbox_files_all   = matchbox_out_all.map { 
-        output -> tuple(output.heavy_chain, output.light_chain)
+    
+    // matchbox_files_all   = matchbox_out_all.map { 
+    //     output -> tuple(output.heavy_chain, output.light_chain)
+    // }
+
+    matchbox_files_all = matchbox_out_all.map { 
+        output -> params.nanobody
+            ? tuple(output.heavy_chain)
+            : tuple(output.heavy_chain, output.light_chain)
     }
-    riot_files_best = riot_best_cat_out.heavy_chain.map { chain -> chain.file }.mix(riot_best_cat_out.light_chain.map { chain -> chain.file })
-    riot_files_all  = riot_all_cat_out.heavy_chain.map { chain -> chain.file }.mix(riot_all_cat_out.light_chain.map { chain -> chain.file })
+
+    riot_files_best = params.nanobody
+    ? riot_best_cat_out.heavy_chain
+        .map { chain -> chain.file }
+    : riot_best_cat_out.heavy_chain
+        .map { chain -> chain.file }
+        .mix(riot_best_cat_out.light_chain.map { chain -> chain.file })
+
+    // riot_files_best = riot_best_cat_out.heavy_chain
+    // .map { chain -> chain.file }
+    // .mix(riot_best_cat_out.light_chain
+    // .map { chain -> chain.file }
+    // )
+
+    riot_files_all = params.nanobody
+    ? riot_all_cat_out.heavy_chain
+        .map { chain -> chain.file }
+    : riot_all_cat_out.heavy_chain
+        .map { chain -> chain.file }
+        .mix(riot_all_cat_out.light_chain.map { chain -> chain.file })
+
+    // riot_files_all  = riot_all_cat_out.heavy_chain
+    // .map { chain -> chain.file }
+    // .mix(riot_all_cat_out.light_chain
+    // .map { chain -> chain.file }
+    // )
+    
     multiqc_report = multiqc_out
     counts_matrix = counts_matrix
 }
