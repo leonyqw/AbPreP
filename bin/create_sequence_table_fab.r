@@ -19,7 +19,7 @@ library(fs)
 
 option_list <- list(
     make_option("--keep_cols", type = "character", metavar="path", help = "Path to files for columns to keep"),
-    make_option("--input", type = "character", metavar="path", help = "Path to heavy anbd light chain files")
+    make_option("--input", type = "character", metavar="path", help = "Path to heavy and light chain files")
 )
 
 opt <- parse_args(OptionParser(option_list = option_list))
@@ -77,32 +77,15 @@ both_chains |>
   filter(productive_H & productive_L) |>
   filter(cdr3_aa_H != cdr3_aa_L) |> # Remove sequences where HCDR3 & LCDR3 are the same
   select(-c(sequence_header, productive_H, productive_L, complete_vdj_H, complete_vdj_L)) |> 
-  summarise(
-    count = n(),
-    .by = any_of(colnames(both_chains))) |>
-  group_by(sample) |>
+  count(across(everything()), name = "count") |> 
+  # summarise(
+    # count = n(),
+    # .by = any_of(colnames(both_chains))) |>
+  # group_by(sample) |>
   # mutate(cpm = (count / sum(count)) * 1000000) |>
   # arrange(desc(cpm)) |>
   write_csv("counts_matrix.csv")
-
-# TODO DELETE
-## Add to new analysis script for aim 2?
-# # table of most common amino acid sequence for each clone 
-# both_chains |>
-# # collapse into clones
-#   filter(productive_H & productive_L) |>
-#   filter(cdr3_aa_H != cdr3_aa_L) |>
-#   mutate(v_call_L = str_remove(v_call_L, "\\*.*$"),
-#            v_call_H = str_remove(v_call_H, "\\*.*$")) |>
-#   #filter(nchar(sequence_aa_L) > 75, nchar(sequence_aa_H) > 90) |>
-#   summarise(count = n(), 
-#             .by = c(cdr3_aa_H, cdr3_aa_L, v_call_H, v_call_L, sequence_aa_L, sequence_aa_H)) |>
-#   summarise(
-#     sequence_aa_L = sequence_aa_L[which.max(count)],
-#     sequence_aa_H = sequence_aa_H[which.max(count)], 
-#     .by = c(cdr3_aa_H, cdr3_aa_L, v_call_H, v_call_L)) |>
-#   write_csv()
-
+  
 ################################################
 ## R SESSION INFO                             ##
 ################################################
