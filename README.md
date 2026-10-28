@@ -1,29 +1,32 @@
 # AbPreP - Antibody preprocessing pipeline
-This nextflow pipeline is designed to assist in processing of antibody long-read sequences. This will align and annotate heavy and light chains from long reads, and provide QC metrics.
+AbPreP is a bioinformatic nextflow pipeline designed to assist in preprocessing antibody long-read sequences. It takes a sample sheet of FASTQ/FASTA files as input, aligns reads to a reference genome, extracts and annotates heavy and light chains, produces a counts matrix and an extensive QC report. This pipeline can also be extended and utilized for nanobody data.
+
+[Insert metro map]
 
 ## Useful links
 * The [documentation website]()
 * The [data]()
 
-
-## Introduction
-[Insert ]
-
 ## Usage
 First, prepare samplesheet with input data as follow:
-```
-sample,xx,xx
-sample1,xx,xx
-```
 
+**samplesheet.csv**:
+```csv
+barcode,sample_name,species
+barcode01,SAMPLE1,human
 ```
+Each row represents a different fastq file or directory for that barcoded sample. 	
+
+Now, you can run the pipeline using:
+```bash
 nextflow run main.nf \
+	--read_dir <READS> \
+	--sample_sheet <SAMPLE SHEET> \
+	--phagemid_ref <REFERENCE GENOME> \
+	--matchbox_script <MATCHBOX SCRIPT> 
+	--params-file <MATCHBOX PARAMETERS> \
+	--multiqc_config <MULTIQC CONFIG> \
 	-profile <conda/singularity/.../institute>
-	-params-file <path to parameter file>
-	--read_dir <path to fastq files> \
-	--sample_sheet <path to sample sheet> \
-	--phagemid_ref <path to reference genome> \
-	--matchbox_script <path to matchbox script>
 ```
 
 Parameters
@@ -41,17 +44,19 @@ Generic options
 ```
 ```
 Required parameters:
---read_dir				: Specify full path to the read file(s) location
---sample_sheet  		: Specify full path to the .csv sample sheet
---phagemid_ref			: Specify full path to the reference genome
---matchbox_script		: Specify full path to the matchbox script
+--read_dir		: Specify full path to the read file(s) location
+--sample_sheet  	: Specify full path to the .csv sample sheet
+--phagemid_ref		: Specify full path to the reference genome
+--matchbox_script	: Specify full path to the matchbox script
 --matchbox_parameters	: Specify full path to the parameters file for the matchbox script
+--multiqc_config	: Specify full path to the MultiQC config YAML file
 
 Optional parameters:
 --nanobody              : Takes a true or false value. Specifies whether pipeline is for nanobody (true) or antibody (false) sequencing data (default: false)
+--num_reads		: Number of reads to split the input files into
 --output_dir        	: Specify the full path to where the output files will be written  (default: "$projectDir/results)
--profile		    	: Specify the profile to run nextflow through
-						  Options - [standard, wehi, conda, singularity, local] (default: standard)
+-profile		: Specify the profile to run nextflow through
+			  Options - [standard, wehi, conda, singularity, local] (default: standard)
 ```
 
 ## Input
@@ -64,4 +69,9 @@ This pipeline requires as input:
 * The path of the directory where it should write the results
 
 ## Output
-This pipeline will produce QC metrics and the annotation results for paired heavy and light chain sequences from all samples. All aligned sequences in BAM format, heavy and light chain sequences in FASTA format, as well as intermediate files (samtools QC results, matchbox stats) are written to the results directory.
+This pipeline will produce:
+* csv file of extracted and annotated heavy and light chains per barcode
+* QC report
+* Counts matrix of each productive heavy and light chain pair
+
+All intermediate files are written to the results directory.
