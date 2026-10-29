@@ -82,7 +82,7 @@ both_chains |>
     # count = n(),
     # .by = any_of(colnames(both_chains))) |>
   # group_by(sample) |>
-  # mutate(cpm = (count / sum(count)) * 1000000) |>
+  # mutate(cpm = (count / sum(count)) * 1000000) |>  |> #Counts per million
   # arrange(desc(cpm)) |>
   write_csv("counts_matrix.csv")
   
