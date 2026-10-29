@@ -61,7 +61,7 @@ H_chains <- read_csv(
   #   count = n(),
   #   .by = any_of(colnames(.x))) |>
   # group_by(sample) |>
-  # mutate(cpm = (count / sum(count)) * 1000000) |>
+  # mutate(cpm = (count / sum(count)) * 1000000) |> #Counts per million
   # arrange(desc(cpm)) |>
   write_csv("counts_matrix.csv")
   
