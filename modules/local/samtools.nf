@@ -37,10 +37,10 @@ process SAMTOOLS {
     script:
     """
 	# View and convert file from SAM to BAM format. Sort alignments and outputs the file in BAM format
-	samtools view -b "${file}" | samtools sort -o "${barcode}-${file_num}_aligned_sorted.bam"
+	samtools view --threads ${task.cpus - 1} -b "${file}" | samtools sort --threads ${task.cpus - 1} -o "${barcode}-${file_num}_aligned_sorted.bam"
 	
 	# Index BAM file for fast random access
-	samtools index "${barcode}-${file_num}_aligned_sorted.bam"
+	samtools index --threads ${task.cpus - 1} "${barcode}-${file_num}_aligned_sorted.bam"
 	"""
 
 	stub:
@@ -85,10 +85,10 @@ process SAMTOOLS_STATS {
 	samtools cat ${files.join(' ')} -o "${barcode}_aligned_sorted.bam"
 
 	# Counts the number of alignments for each FLAG type
-	samtools stats "${barcode}_aligned_sorted.bam" > "${barcode}_stats.txt"
+	samtools stats --threads ${task.cpus - 1} "${barcode}_aligned_sorted.bam" > "${barcode}_stats.txt"
 
 	# Extract read lengths
-	samtools view "${barcode}_aligned_sorted.bam" -F 256 -F 2048 | awk '{print length(\$10)}' > "${barcode}_read_lengths.tsv"
+	samtools view --threads ${task.cpus - 1} "${barcode}_aligned_sorted.bam" -F 256 -F 2048 | awk '{print length(\$10)}' > "${barcode}_read_lengths.tsv"
 	"""
 
 	stub:
