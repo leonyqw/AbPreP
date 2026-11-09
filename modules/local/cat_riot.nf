@@ -25,8 +25,6 @@ record Chain {
 }
 
 workflow CAT_RIOT {
-
-	// Declare inputs required for the process
     take:
     nanobody: Boolean // True or false flag for nanobody extraction
     files: Channel<Sample>
@@ -35,7 +33,8 @@ workflow CAT_RIOT {
     def light_chain_cat_out = null
 
     // Cat heavy chain outputs per barcode from riot
-    heavy_chain_ch = files.flatMap { sample -> sample }
+    heavy_chain_ch = files
+        .flatMap { sample -> sample }
         .map { sample -> tuple(sample.barcode, sample.heavy_chain) }
         .groupBy()
         .map { barcode, file_list -> record(barcode: barcode, files: file_list.toList()) }
@@ -44,14 +43,15 @@ workflow CAT_RIOT {
     // Only cat light chain if nanobdy parameter is false
     if (!nanobody) {
         // Cat light chain outputs per barcode from riot
-        light_chain_ch = files.flatMap { sample -> sample }
+        light_chain_ch = files
+            .flatMap { sample -> sample }
             .map { sample -> tuple(sample.barcode, sample.light_chain) }
             .groupBy()
             .map { barcode, file_list -> record(barcode: barcode, files: file_list.toList()) }
         light_chain_cat_out = CAT_LIGHT(light_chain_ch)
     }
 
-	emit:
+    emit:
     heavy_chain = heavy_chain_cat_out
     light_chain = light_chain_cat_out
 }

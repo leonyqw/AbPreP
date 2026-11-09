@@ -65,7 +65,7 @@ workflow {
         params.nanobody,
         params.multiqc_config,
         params.logo,
-        params.num_reads
+        params.num_reads,
     )
 
     publish:
@@ -86,18 +86,18 @@ workflow {
     onComplete:
     def status = workflow.success ? "SUCCESS ✅" : "FAILED ❌"
 
-    println "\n"
-    println "============================================================================"
-    println "Pipeline execution summary"
-    println "============================================================================"
-    println "Completed at       : ${workflow.complete}"
-    println "Duration           : ${workflow.duration}"
-    println "Pipeline finished  : ${status}"
-    println "exit status        : ${workflow.exitStatus}"
-    println ""
+    println("\n")
+    println("============================================================================")
+    println("Pipeline execution summary")
+    println("============================================================================")
+    println("Completed at       : ${workflow.complete}")
+    println("Duration           : ${workflow.duration}")
+    println("Pipeline finished  : ${status}")
+    println("exit status        : ${workflow.exitStatus}")
+    println("")
 
     onError:
-    println "Error: Pipeline execution stopped with the following message: ${workflow.errorMessage}".stripIndent()
+    println("Error: Pipeline execution stopped with the following message: ${workflow.errorMessage}".stripIndent())
 }
 
 // Set output paths

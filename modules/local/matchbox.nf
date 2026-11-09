@@ -20,17 +20,15 @@ record MatchboxOutput {
 }
 
 process RUN_MATCHBOX {
-	tag "${barcode}, file:${file_num}"
+    tag "${barcode}, file:${file_num}"
     label "process_high"
 
     // Use Singularity container or pull from Docker container if singularity profile is enabled
-	container 'ghcr.io/jakob-schuster/matchbox@sha256:774786ff07c5d9d16d1fb64d8329c9c2cf9fd0fe3d89856e2a2672133e0c3fae'
+    container 'ghcr.io/jakob-schuster/matchbox@sha256:774786ff07c5d9d16d1fb64d8329c9c2cf9fd0fe3d89856e2a2672133e0c3fae'
 
-	// Declare inputs required for the process
     input:
-    // Record for sample name, and path for DNA sequence fastq files
-	record (
-        barcode: String, 
+    record(
+        barcode: String,
         file_num: Integer,
         file: Path
     )
@@ -43,8 +41,8 @@ process RUN_MATCHBOX {
     record(
         barcode: barcode,
         file_num: file_num,
-        matchbox_stats: file("${barcode}-${file_num}_matchbox_counts.csv"), 
-        heavy_chain: file("${barcode}-${file_num}_heavy.fasta"), 
+        matchbox_stats: file("${barcode}-${file_num}_matchbox_counts.csv"),
+        heavy_chain: file("${barcode}-${file_num}_heavy.fasta"),
         light_chain: file("${barcode}-${file_num}_light.fasta", optional: true)
     )
 
@@ -79,8 +77,6 @@ process RUN_MATCHBOX {
 }
 
 workflow MATCHBOX {
-
-	// Declare inputs required for the process
     take:
     sample: Sample
     matchbox_parameters: Path // Path to matchbox parameters
@@ -90,8 +86,8 @@ workflow MATCHBOX {
     main:
     // Parse parameters file
     parameters = file(matchbox_parameters)
-    .splitCsv( header: true )
-    .collectEntries { row -> [(row.Parameter): row.Value] }
+        .splitCsv(header: true)
+        .collectEntries { row -> [(row.Parameter): row.Value] }
 
     // param = channel.fromPath("${matchbox_parameters}")
     // .flatMap { csv -> csv.splitCsv(header: true, sep: ',') }
@@ -102,11 +98,14 @@ workflow MATCHBOX {
     // .view()
 
     // Run matchbox process
-    matchbox_out = RUN_MATCHBOX(sample, 
-        file("${projectDir}/bin/matchbox_preprocessing_script.mb"), 
-        parameters, match_param, nanobody)
+    matchbox_out = RUN_MATCHBOX(
+        sample,
+        file("${projectDir}/bin/matchbox_preprocessing_script.mb"),
+        parameters,
+        match_param,
+        nanobody,
+    )
 
-	// Declare outputs
-	emit:
+    emit:
     matchbox_out
 }

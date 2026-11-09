@@ -6,7 +6,8 @@ nextflow.enable.types = true
 // Print pipeline information
 workflow header {
 
-log.info """
+    log.info(
+        """
 =======================================================================================
 AbPreP: Antibody Preprocessing Pipeline
 =======================================================================================
@@ -19,4 +20,5 @@ Cite this pipeline @
 Workflow run parameters 
 =======================================================================================
 """
+    )
 }

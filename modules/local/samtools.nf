@@ -6,33 +6,31 @@ Utilize samtools to write SAM file to BAM file.
 nextflow.enable.types = true
 
 process SAMTOOLS {
-	tag "${barcode}, file:${file_num}"
-	label "process_medium"
+    tag "${barcode}, file:${file_num}"
+    label "process_medium"
 
-	// Enable conda and install samtools if conda profile is set
-	conda (params.enable_conda ? 'bioconda::samtools=1.22.1' : null)
+    // Enable conda and install samtools if conda profile is set
+    conda params.enable_conda ? 'bioconda::samtools=1.22.1' : null
 
-	// Use Singularity container or pull from Docker container for samtools v1.22.1 (linux/amd64) if singularity profile is enabled
-	container "${ (workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container) ?
-    'oras://community.wave.seqera.io/library/samtools:1.22.1--9a10f06c24cdf05f' :
-    'community.wave.seqera.io/library/samtools:1.22.1--eccb42ff8fb55509' }"
+    // Use Singularity container or pull from Docker container for samtools v1.22.1 (linux/amd64) if singularity profile is enabled
+    container "${(workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container)
+        ? 'oras://community.wave.seqera.io/library/samtools:1.22.1--9a10f06c24cdf05f'
+        : 'community.wave.seqera.io/library/samtools:1.22.1--eccb42ff8fb55509'}"
 
     input:
-	// Record for sample name, and path for aligned reads after minimap2
-	record(
-		barcode: String, 
-		file_num: Integer,
-		file: Path
-	)
-	
-	// Output aligned reads, bam index file
-	output:
-	record(
-		barcode: barcode,
-		file_num: file_num,
-		aligned_sorted_read: file("${barcode}-${file_num}_aligned_sorted.bam"),
-		index: file("${barcode}-${file_num}_aligned_sorted.bam.bai")
-	)
+    record(
+        barcode: String,
+        file_num: Integer,
+        file: Path
+    )
+
+    output:
+    record(
+        barcode: barcode,
+        file_num: file_num,
+        aligned_sorted_read: file("${barcode}-${file_num}_aligned_sorted.bam"),
+        index: file("${barcode}-${file_num}_aligned_sorted.bam.bai"),
+    )
 
     script:
     """
@@ -43,8 +41,8 @@ process SAMTOOLS {
 	samtools index --threads ${task.cpus - 1} "${barcode}-${file_num}_aligned_sorted.bam"
 	"""
 
-	stub:
-	"""
+    stub:
+    """
 	touch ${barcode}-${file_num}_aligned_sorted.bam
 	touch ${barcode}-${file_num}_aligned_sorted.bam.bai
 	"""
@@ -54,30 +52,28 @@ process SAMTOOLS {
 Utilize samtools to cat split samnple files together, and get stats.
 */
 process SAMTOOLS_STATS {
-	tag "${barcode}"
-	label "process_medium"
+    tag "${barcode}"
+    label "process_medium"
 
-	// Enable conda and install samtools if conda profile is set
-	conda (params.enable_conda ? 'bioconda::samtools=1.22.1' : null)
+    // Enable conda and install samtools if conda profile is set
+    conda params.enable_conda ? 'bioconda::samtools=1.22.1' : null
 
-	// Use Singularity container or pull from Docker container for samtools v1.22.1 (linux/amd64) if singularity profile is enabled
-	container "${ (workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container) ?
-    'oras://community.wave.seqera.io/library/samtools:1.22.1--9a10f06c24cdf05f' :
-    'community.wave.seqera.io/library/samtools:1.22.1--eccb42ff8fb55509' }"
+    // Use Singularity container or pull from Docker container for samtools v1.22.1 (linux/amd64) if singularity profile is enabled
+    container "${(workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container)
+        ? 'oras://community.wave.seqera.io/library/samtools:1.22.1--9a10f06c24cdf05f'
+        : 'community.wave.seqera.io/library/samtools:1.22.1--eccb42ff8fb55509'}"
 
     input:
-	// Record for sample name, and list of paths for aligned reads for each barcode sample
-	record(
-		barcode: String, 
-		files: List<Path>
-	)
-	
-	// Output aligned QC statistics and read lengths
-	output:
-	record(
-		stats: file("${barcode}_stats.txt"),
-		read_lengths: file("${barcode}_read_lengths.tsv")
-	)
+    record(
+        barcode: String,
+        files: List<Path>
+    )
+
+    output:
+    record(
+        stats: file("${barcode}_stats.txt"),
+        read_lengths: file("${barcode}_read_lengths.tsv"),
+    )
 
     script:
     """
@@ -91,8 +87,8 @@ process SAMTOOLS_STATS {
 	samtools view --threads ${task.cpus - 1} "${barcode}_aligned_sorted.bam" -F 256 -F 2048 | awk '{print length(\$10)}' > "${barcode}_read_lengths.tsv"
 	"""
 
-	stub:
-	"""
+    stub:
+    """
 	touch ${barcode}_stats.txt
 	touch ${barcode}_read_lengths.tsv
 	"""
