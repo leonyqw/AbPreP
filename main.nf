@@ -18,13 +18,13 @@ params {
     read_dir: String
     sample_sheet: String
     phagemid_ref: Path
-    // matchbox_script: Path
     matchbox_parameters: Path
     help: Boolean
     enable_conda: Boolean
     nanobody: Boolean
     multiqc_config: Path
     logo: Path
+    num_reads: Integer
 }
 
 workflow {
@@ -64,7 +64,8 @@ workflow {
         params.matchbox_parameters,
         params.nanobody,
         params.multiqc_config,
-        params.logo
+        params.logo,
+        params.num_reads,
     )
 
     publish:
@@ -79,24 +80,24 @@ workflow {
     matchbox_files_all  = abprep.matchbox_files_all
     riot_files_best     = abprep.riot_files_best
     riot_files_all      = abprep.riot_files_all
-    multiqc_report       = abprep.multiqc_report
-    counts_matrix        = abprep.counts_matrix
+    multiqc_report      = abprep.multiqc_report
+    counts_matrix       = abprep.counts_matrix
 
     onComplete:
     def status = workflow.success ? "SUCCESS ✅" : "FAILED ❌"
 
-    println "\n"
-    println "============================================================================"
-    println "Pipeline execution summary"
-    println "============================================================================"
-    println "Completed at       : ${workflow.complete}"
-    println "Duration           : ${workflow.duration}"
-    println "Pipeline finished  : ${status}"
-    println "exit status        : ${workflow.exitStatus}"
-    println ""
+    println("\n")
+    println("============================================================================")
+    println("Pipeline execution summary")
+    println("============================================================================")
+    println("Completed at       : ${workflow.complete}")
+    println("Duration           : ${workflow.duration}")
+    println("Pipeline finished  : ${status}")
+    println("exit status        : ${workflow.exitStatus}")
+    println("")
 
     onError:
-    println "Error: Pipeline execution stopped with the following message: ${workflow.errorMessage}".stripIndent()
+    println("Error: Pipeline execution stopped with the following message: ${workflow.errorMessage}".stripIndent())
 }
 
 // Set output paths

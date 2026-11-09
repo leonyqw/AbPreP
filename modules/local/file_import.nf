@@ -9,26 +9,25 @@ nextflow.enable.types = true
 
 process CONCAT_READS {
     tag "${barcode}"
+    label "process_medium"
 
     input:
-    // Record for sample barcode, and list of files with the barcode
     record(
-        barcode: String, 
+        barcode: String,
         files: List<Path>
     )
 
-    // Output sample: tuple containing barcode and merged file
     output:
     record(
-        barcode: barcode, 
-        file: file("${barcode}_merged.fastq")
+        barcode: barcode,
+        file: file("${barcode}_merged.fastq"),
     )
 
     script:
     // Check if all files are the same format, or if files are not found
-    if( files.size() == 0 ) {
-        error "No files found for ${barcode}"
-        }
+    if (files.size() == 0) {
+        error("No files found for ${barcode}")
+    }
     // Append and join together files from the same barcode, and output a merged file
     """
     zcat -f ${files.join(' ')} > "${barcode}_merged.fastq"
@@ -41,38 +40,35 @@ process CONCAT_READS {
 }
 
 workflow PARSE_SAMPLE_SHEET {
-    
     take:
     read_dir: String // Directory where reads are stored
     sample_sheet: String // Path to sample sheet
-    
+
     main:
 
     // Parse list of barcodes in the sample sheet
     barcodes = channel.fromPath(sample_sheet)
-    .splitCsv(header: true)
-    .map { row -> row.barcode }
+        .splitCsv(header: true)
+        .map { row -> row.barcode }
 
     // Get list of files for each barcode from the read directory, as well as any files in subdirectories that match
-    barcode_files = barcodes
-    .map { barcode ->
+
+    barcode_files = barcodes.map { barcode ->
         record(
-            barcode: barcode, 
-            files: files("${read_dir}/**${barcode}*.{fastq,fq,fastq.gz,fq.gz}")
+            barcode: barcode,
+            files: files("${read_dir}/**${barcode}*.{fastq,fq,fastq.gz,fq.gz}"),
         )
     }
 
     // Read and concat (if multiple files) into one file per sample / barcode
-    sample = CONCAT_READS(barcode_files)
-    // CONCAT_READS(barcode_files)
+    ch_sample = CONCAT_READS(barcode_files)
 
-	// Declare outputs
     emit:
-    // sample: Channel<Sample> = sample
-    sample
+    sample: Channel<Sample> = ch_sample
 }
 
-// record Sample {
-//         barcode: String
-//         file: Path
-// }
+record Sample {
+    barcode: String
+    file_num: Integer
+    file: Path
+}

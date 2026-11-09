@@ -1,125 +1,182 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com///nextflow_schema.json",
+  "$id": "https://github.com/leonyqw/AbPreP/main/nextflow_schema.json",
   "title": "AbPreP pipeline parameters",
   "description": "AbPreP: Antibody Preprocessing Pipeline",
   "type": "object",
   "$defs": {
-    "input_output_options": {
-      "title": "Input/output options",
-      "type": "object",
-      "description": "Define where the pipeline should find input data and save output data",
-      "default": "",
-      "properties": {
-        "read_dir": {
-          "type": "string",
-          "description": "Path to file or directory of sequence reads",
-          "exists": true,
-          "help_text": "Accepts a file or directory where files are of fastq, fq, fastq.gz, or fq.gz format",
-          "fa_icon": "fas fa-folder-open",
-          "format": "path"
-        },
-        "sample_sheet": {
-          "type": "string",
-          "description": "Sample sheet for pipeline input",
-          "exists": true,
-          "fa_icon": "fas fa-table",
-          "pattern": "^\\S+\\.csv$",
-          "format": "file-path"
-        },
-        "output_dir": {
-          "type": "string",
-          "default": "results",
-          "description": "The output directory where results will be saved",
-          "format": "directory-path",
-          "fa_icon": "fas fa-folder-open"
-        }
+      "input_output_options": {
+          "title": "Input/output options",
+          "type": "object",
+          "description": "Define where the pipeline should find input data and save output data",
+          "default": "",
+          "properties": {
+              "read_dir": {
+                  "type": "string",
+                  "description": "Path to file or directory of sequence reads",
+                  "exists": true,
+                  "help_text": "Accepts a file or directory where files are of fastq, fq, fastq.gz, or fq.gz format",
+                  "fa_icon": "fas fa-folder-open",
+                  "format": "path"
+              },
+              "sample_sheet": {
+                  "type": "string",
+                  "description": "Sample sheet for pipeline input",
+                  "exists": true,
+                  "fa_icon": "fas fa-table",
+                  "pattern": "^\\S+\\.csv$",
+                  "format": "file-path"
+              },
+              "output_dir": {
+                  "type": "string",
+                  "default": "results",
+                  "description": "The output directory where results will be saved",
+                  "format": "directory-path",
+                  "fa_icon": "fas fa-folder-open"
+              }
+          },
+          "required": [
+              "read_dir",
+              "sample_sheet",
+              "output_dir"
+          ],
+          "fa_icon": "fas fa-terminal"
       },
-      "required": ["read_dir", "sample_sheet", "output_dir"],
-      "fa_icon": "fas fa-terminal"
-    },
-    "reference_genome_options": {
-      "title": "Reference genome options",
-      "type": "object",
-      "description": "Reference genome related files required for the workflow",
-      "default": "",
-      "properties": {
-        "phagemid_ref": {
-          "type": "string",
-          "description": "Location of the phagemid reference genome in fa format",
-          "format": "file-path",
-          "exists": true,
-          "pattern": "^\\S+\\.fa$",
-          "fa_icon": "fas fa-file"
-        }
+      "reference_genome_options": {
+          "title": "Reference genome options",
+          "type": "object",
+          "description": "Reference genome related files required for the workflow",
+          "default": "",
+          "properties": {
+              "phagemid_ref": {
+                  "type": "string",
+                  "description": "Location of the phagemid reference genome in fa format",
+                  "format": "file-path",
+                  "exists": true,
+                  "pattern": "^\\S+\\.fa$",
+                  "fa_icon": "fas fa-dna"
+              }
+          },
+          "required": [
+              "phagemid_ref"
+          ],
+          "fa_icon": "fas fa-dna"
       },
-      "required": ["phagemid_ref"],
-      "fa_icon": "fas fa-dna"
-    },
-    "matchbox_options": {
-      "title": "Matchbox options",
-      "type": "object",
-      "description": "Matchbox related files and parameters required for the workflow",
-      "default": "",
-      "properties": {
-        "matchbox_parameters": {
-          "type": "string",
-          "description": "Path to the matchbox parameters file",
-          "fa_icon": "fas fa-file-alt",
-          "exists": true,
-          "pattern": "^\\S+\\.csv$",
-          "format": "file-path"
-        }
+      "matchbox_options": {
+          "title": "Matchbox options",
+          "type": "object",
+          "description": "Matchbox related files and parameters required for the workflow",
+          "default": "",
+          "properties": {
+              "matchbox_parameters": {
+                  "type": "string",
+                  "description": "Path to the matchbox parameters file",
+                  "fa_icon": "fas fa-file-alt",
+                  "exists": true,
+                  "pattern": "^\\S+\\.csv$",
+                  "format": "file-path"
+              }
+          },
+          "required": [
+              "matchbox_parameters"
+          ],
+          "fa_icon": "fas fa-fire-alt"
       },
-      "required": ["matchbox_parameters"],
-      "fa_icon": "fas fa-fire-alt"
-    },
-    "antibody_extraction_options": {
-      "title": "Antibody extraction options",
-      "type": "object",
-      "description": "Parameters used for antibody extraction",
-      "default": "",
-      "properties": {
-        "nanobody": {
-          "type": "boolean",
-          "description": "Extract nanobody sequences instead of antibody sequences",
-          "help_text": "Set to true to extract nanobody sequences instead of antibody sequences. Default is false.",
-          "fa_icon": "fas fa-check"
-        }
+      "antibody_nanobody_options": {
+          "title": "Antibody/Nanobody options",
+          "type": "object",
+          "description": "Option for antibody or nanobody data",
+          "default": "",
+          "properties": {
+              "nanobody": {
+                  "type": "boolean",
+                  "description": "Extract nanobody sequences instead of antibody sequences",
+                  "help_text": "Set to true to extract nanobody sequences instead of antibody sequences. Default is false.",
+                  "fa_icon": "fas fa-check"
+              }
+          },
+          "fa_icon": "fas fa-bacteria"
       },
-      "fa_icon": "fas fa-bacteria"
-    },
-    "environment_options": {
-      "title": "Environment options",
-      "type": "object",
-      "description": "",
-      "default": "",
-      "properties": {
-        "enable_conda": {
-          "type": "boolean",
-          "description": "Option to use conda environment instead of docker/singularity containers",
-          "help_text": "Set to true to use a conda environment instead of docker/singularity containers. Default is false.",
-          "fa_icon": "fas fa-check"
-        }
+      "performance_options": {
+          "title": "Performance options",
+          "type": "object",
+          "description": "Option to split large files into smaller chunks for better parallelisation",
+          "default": "",
+          "properties": {
+              "num_reads": {
+                  "type": "integer",
+                  "default": 500000,
+                  "description": "Number of reads per chunk to split large files into",
+                  "fa_icon": "fas fa-code-branch"
+              }
+          },
+          "fa_icon": "fas fa-tachometer-alt"
       },
-      "fa_icon": "fas fa-laptop-code"
-    }
+      "quality_control": {
+          "title": "Quality control",
+          "type": "object",
+          "description": "QC report related configuration",
+          "default": "",
+          "properties": {
+              "multiqc_config": {
+                  "type": "string",
+                  "description": "AbPreP MultiQC plugin configuration",
+                  "format": "file-path",
+                  "pattern": "^\\S+\\.yaml$",
+                  "default": "${projectDir}/multiqc/multiqc_config_abprep.yaml",
+                  "fa_icon": "fas fa-file-alt"
+              },
+              "logo": {
+                  "type": "string",
+                  "hidden": true,
+                  "description": "logo for the MultiQC report",
+                  "default": "${projectDir}/multiqc/logo.yaml",
+                  "fa_icon": "fas fa-image"
+              }
+          },
+          "required": [
+              "multiqc_config"
+          ],
+          "fa_icon": "fas fa-clipboard-check"
+      },
+      "environment_options": {
+          "title": "Environment options",
+          "type": "object",
+          "description": "",
+          "default": "",
+          "properties": {
+              "enable_conda": {
+                  "type": "boolean",
+                  "description": "Option to use conda environment instead of docker/singularity containers",
+                  "help_text": "Set to true to use a conda environment instead of docker/singularity containers. Default is false.",
+                  "fa_icon": "fas fa-check",
+                  "hidden": true
+              }
+          },
+          "fa_icon": "fas fa-laptop-code"
+      }
   },
   "allOf": [
-    {
-      "$ref": "#/$defs/input_output_options"
-    },
-    {
-      "$ref": "#/$defs/reference_genome_options"
-    },
-    {
-      "$ref": "#/$defs/matchbox_options"
-    },
-    {
-      "$ref": "#/$defs/antibody_extraction_options"
-    },
-    {
-      "$ref": "#/$defs/environment_options"
-    }
+      {
+          "$ref": "#/$defs/input_output_options"
+      },
+      {
+          "$ref": "#/$defs/reference_genome_options"
+      },
+      {
+          "$ref": "#/$defs/matchbox_options"
+      },
+      {
+          "$ref": "#/$defs/antibody_nanobody_options"
+      },
+      {
+          "$ref": "#/$defs/performance_options"
+      },
+      {
+          "$ref": "#/$defs/quality_control"
+      },
+      {
+          "$ref": "#/$defs/environment_options"
+      }
   ]
 }
