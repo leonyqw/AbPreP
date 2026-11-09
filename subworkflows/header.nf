@@ -13,7 +13,7 @@ AbPreP: Antibody Preprocessing Pipeline
 =======================================================================================
 
 Created by Leon Wang
-Find documentation @ 
+Find documentation @ https://github.com/leonyqw/AbPreP
 Cite this pipeline @ 
 
 =======================================================================================
