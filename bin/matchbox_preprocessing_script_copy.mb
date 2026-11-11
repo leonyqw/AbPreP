@@ -1,0 +1,106 @@
+# Matchbox script to rearrange the read sequence so the variable light chain occurs at the start of the read sequence, and outputs the heavy and light chain separately
+
+# Parameters
+
+# Declare sequences from reference to use to extract HC and LC
+# Light chain before and after sequences
+LCss            = args.LCss
+LC_after_lambda = args.LC_after_lambda
+LC_after_kappa  = args.LC_after_kappa
+
+# Heavy chain before and after sequences
+HCss            = args.HCss
+HC_after        = args.HC_after
+
+# Declare sequences from reference to use to extract nanobody
+# Nanobody before and after sequences
+nanobody_ss     = args.nanobody_ss
+nanobody_after  = args.nanobody_after
+
+# Assign sample name id
+seqid = args.seqid
+
+# Assign nanobody flag
+nanobody = args.nanobody
+
+# Assign count csv name
+count_name = '{seqid}_matchbox_counts'
+
+# Filter for only reads less than 15000bp long to minimize memory error
+if len(read.seq) < 15000 {
+	
+        # Count total number of reads
+        count!('total reads', name = count_name)
+
+        # Get antibody sequences
+        if not nanobody {
+
+                if read matches [before:_ after:(LCss _)] => {
+                        
+                        # Count number of reads that can be rotated
+                        count!('rotated', name = count_name)
+
+                        # Rearrange light chain to the start of the read sequence
+                        rotated = after.concat(before)
+
+                        # Extract heavy and light chains
+                        # Identify whether a heavy chain exists
+                        if rotated matches [_ heavy:(HCss _ HC_after) _] => {
+
+                                # Count number of heavy chains identified
+                                count!('heavy', name = count_name)
+                                
+                                # If a heavy chain exists, look for a corresponding light chain
+                                if rotated matches {
+                                        
+                                        # First try and match the kappa light chain
+                                        [_ light:(LCss _ LC_after_kappa) _] => {
+                                                
+                                                # Count number of heavy and kappa light chains were found
+                                                count!('heavy + kappa', name = count_name)
+
+                                                # Output heavy and light chain sequences to a file
+                                                heavy.out!('{seqid}_heavy.fasta')
+                                                light.out!('{seqid}_light.fasta')
+                                        }
+
+                                        # Else try and match the lambda light chain
+                                        [_ light:(LCss _ LC_after_lambda) _] => {
+                                                
+                                                # Count number of heavy and lambda light chains were found
+                                                count!('heavy + lambda', name = count_name)
+                                                
+                                                # Output heavy and light chain sequences to a file
+                                                heavy.out!('{seqid}_heavy.fasta')
+                                                light.out!('{seqid}_light.fasta')
+                                        }
+                                }
+                        }
+                }
+        }
+
+        # If nanobody is true, extract nanobody sequence
+        else {
+        
+                if read matches [before:_ after:(nanobody_ss _)] => {
+                        
+                # Count number of reads that can be rotated
+                count!('rotated', name = count_name)
+
+                # Rearrange nanobody to the start of the read sequence
+                rotated = after.concat(before)
+
+                # Extract nanobody sequence
+                # Identify whether a nanobody sequence exists
+                if rotated matches [_ heavy:(nanobody_ss _ nanobody_after) _] => {
+
+                        # Count number of nanobody sequences identified
+                        count!('nanobody', name = count_name)
+
+                        # Output nanobody sequences to a file
+                        heavy.out!('{seqid}_heavy.fasta')
+                        }
+                }
+        }
+
+}

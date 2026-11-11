@@ -80,6 +80,7 @@ workflow MATCHBOX {
     take:
     sample: Sample
     matchbox_parameters: Path // Path to matchbox parameters
+    matchbox_script: Path // Path to matchbox script
     match_param: String // Matchbox script matching argument
     nanobody: Boolean // True or false flag for nanobody extraction
 
@@ -100,7 +101,7 @@ workflow MATCHBOX {
     // Run matchbox process
     matchbox_out = RUN_MATCHBOX(
         sample,
-        file("${projectDir}/bin/matchbox_preprocessing_script.mb"),
+        matchbox_script,
         parameters,
         match_param,
         nanobody,

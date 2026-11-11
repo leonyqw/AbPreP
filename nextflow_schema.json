@@ -75,6 +75,15 @@
                   "exists": true,
                   "pattern": "^\\S+\\.csv$",
                   "format": "file-path"
+              },
+              "matchbox_script": {
+                  "type": "string",
+                  "description": "Path to the matchbox script",
+                  "fa_icon": "fas fa-file-code",
+                  "exists": true,
+                  "default": "${projectDir}/bin/matchbox_preprocessing_script.mb",
+                  "pattern": "^\\S+\\.mb$",
+                  "format": "file-path"
               }
           },
           "required": [
