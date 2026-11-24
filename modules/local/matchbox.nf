@@ -24,7 +24,7 @@ process RUN_MATCHBOX {
     label "process_high"
 
     // Use Singularity container or pull from Docker container if singularity profile is enabled
-    container 'ghcr.io/jakob-schuster/matchbox@sha256:774786ff07c5d9d16d1fb64d8329c9c2cf9fd0fe3d89856e2a2672133e0c3fae'
+    container 'ghcr.io/jakob-schuster/matchbox:sha256-3fa21ad0a0db4a2377239a68d1f48b083ac90b3506b1e5f6e50032001cc36025'
 
     input:
     record(
